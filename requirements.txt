@@ -1,4 +1,6 @@
 streamlit
+os
+base64
 plotly==4.14.3
 pandas
 numpy

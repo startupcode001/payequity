@@ -1,9 +1,5 @@
-# import math
 import pandas as pd
 import numpy as np
-# import io
-# import sys
-# from datetime import datetime
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -18,14 +14,6 @@ from patsy import dmatrices
 import statsmodels.api as sm
 from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
 from statsmodels.sandbox.regression.predstd import wls_prediction_std
-
-# from HELP_Functions import *
-
-# import warnings
-# def ignore_warn(*args, **kwargs):
-#     pass
-# warnings.warn = ignore_warn #ignore annoying warning (from sklearn and seaborn)
-# warnings.filterwarnings("ignore")
 
 # Helper Functions Starts here #
 

@@ -10,14 +10,15 @@ from statsmodels.sandbox.regression.predstd import wls_prediction_std
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import seaborn as sns
-
-# import os
-# import base64
+import base64
+import os
 
 from PE_Functions import *
-# from HELP_Functions import *
+from pathlib import Path
 
+# Set Path
 st.set_page_config(layout="wide")
+demo_path = Path(__file__).parents[0].__str__()+'\\Data\\template.xlsx'
 
 # Function
 @st.experimental_memo
@@ -31,18 +32,22 @@ def get_binary_file_downloader_html(bin_file, file_label='File'):
 
 @st.experimental_memo
 # Run Demo File
-def run_demo():
-    df_demo = pd.read_excel(r'Data\template.xlsx',sheet_name="Submission")
+def run_demo(demo_path):
+    df_demo = pd.read_excel(demo_path,sheet_name="Submission")
     df, df_org, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2, female_coff, female_pvalue, plot_gender = run(df_demo)
     return df, df_org, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2, female_coff, female_pvalue, plot_gender
-df, df_org, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2, female_coff, female_pvalue, plot_gender = run_demo()
+df, df_org, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2, female_coff, female_pvalue, plot_gender = run_demo(demo_path)
+
+# st.write(demo_path)
+# st.dataframe(data=df_demo.head(4), width=None, height=None)
 
 # UI *********************************
 # st.set_page_config(layout="wide")
 
 # Side Panel
 st.sidebar.header('Start here')
-st.sidebar.markdown(get_binary_file_downloader_html('Data/template.xlsx', 'Download Input Template'), unsafe_allow_html=True)
+# st.sidebar.markdown(get_binary_file_downloader_html('Data/template.xlsx', 'Download Input Template'), unsafe_allow_html=True)
+st.sidebar.markdown(get_binary_file_downloader_html(demo_path, 'Download Input Template'), unsafe_allow_html=True)
 uploaded_file = st.sidebar.file_uploader('Upload your input Excel file', type=['xlsx'])
 
 # Main Panel
