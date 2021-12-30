@@ -8,6 +8,4 @@ sklearn
 statsmodels
 matplotlib
 seaborn
-datetime
-plotly==4.14.3
 warnings
