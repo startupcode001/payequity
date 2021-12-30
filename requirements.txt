@@ -9,5 +9,5 @@ statsmodels
 matplotlib
 seaborn
 datetime
-plotly
+plotly==4.14.3
 warnings
