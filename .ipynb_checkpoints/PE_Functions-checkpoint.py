@@ -21,11 +21,11 @@ from statsmodels.sandbox.regression.predstd import wls_prediction_std
 
 # from HELP_Functions import *
 
-import warnings
-def ignore_warn(*args, **kwargs):
-    pass
-warnings.warn = ignore_warn #ignore annoying warning (from sklearn and seaborn)
-warnings.filterwarnings("ignore")
+# import warnings
+# def ignore_warn(*args, **kwargs):
+#     pass
+# warnings.warn = ignore_warn #ignore annoying warning (from sklearn and seaborn)
+# warnings.filterwarnings("ignore")
 
 # Helper Functions Starts here #
 
