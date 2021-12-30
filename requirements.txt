@@ -1,5 +1,5 @@
-pip
 streamlit
+plotly==4.14.3
 pandas
 numpy
 patsy
