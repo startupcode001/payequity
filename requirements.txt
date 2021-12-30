@@ -7,7 +7,6 @@ sklearn
 statsmodels
 matplotlib
 seaborn
-math
 io
 sys
 datetime
