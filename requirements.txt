@@ -1,0 +1,17 @@
+streamlit
+pandas
+numpy
+patsy
+statsmodels
+sklearn
+statsmodels
+matplotlib
+seaborn
+math
+io
+sys
+datetime
+plotly
+warnings
+os
+base64
