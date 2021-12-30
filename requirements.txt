@@ -7,10 +7,6 @@ sklearn
 statsmodels
 matplotlib
 seaborn
-io
-sys
 datetime
 plotly
 warnings
-os
-base64
