@@ -20,7 +20,7 @@ from pathlib import Path
 st.set_page_config(layout="wide")
 demo_path = Path(__file__).parents[0].__str__()+'/Data/template.xlsx'
 
-st.write(demo_path)
+# st.write(demo_path)
 
 # Function
 @st.experimental_memo
@@ -35,7 +35,7 @@ def get_binary_file_downloader_html(bin_file, file_label='File'):
 @st.experimental_memo
 # Run Demo File
 def run_demo(demo_path):
-    df_demo = pd.read_excel(r'template.xlsx',sheet_name="Submission")
+    df_demo = pd.read_excel(demo_path,sheet_name="Submission")
     df, df_org, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2, female_coff, female_pvalue, plot_gender = run(df_demo)
     return df, df_org, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2, female_coff, female_pvalue, plot_gender
 df, df_org, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2, female_coff, female_pvalue, plot_gender = run_demo(demo_path)
