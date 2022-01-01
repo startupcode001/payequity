@@ -20,6 +20,8 @@ from pathlib import Path
 st.set_page_config(layout="wide")
 demo_path = Path(__file__).parents[0].__str__()+'\\Data\\template.xlsx'
 
+st.write(demo_path)
+
 # Function
 @st.experimental_memo
 # Download Excel Template
