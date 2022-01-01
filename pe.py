@@ -23,12 +23,12 @@ demo_path = Path(__file__).parents[0].__str__()+'\\Data\\template.xlsx'
 # Function
 @st.experimental_memo
 # Download Excel Template
-def get_binary_file_downloader_html(bin_file, file_label='File'):
-    with open(bin_file, 'rb') as f:
-        data = f.read()
-    bin_str = base64.b64encode(data).decode()
-    href = f'<a href="data:application/octet-stream;base64,{bin_str}" download="{bin_file}">{file_label}</a>'
-    return href
+# def get_binary_file_downloader_html(bin_file, file_label='File'):
+#     with open(bin_file, 'rb') as f:
+#         data = f.read()
+#     bin_str = base64.b64encode(data).decode()
+#     href = f'<a href="data:application/octet-stream;base64,{bin_str}" download="{bin_file}">{file_label}</a>'
+#     return href
 
 @st.experimental_memo
 # Run Demo File
@@ -46,8 +46,13 @@ df, df_org, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2
 
 # Side Panel
 st.sidebar.header('Start here')
+st.sidebar.markdown("""
+[Example CSV file](demo_path)
+""")
 # st.sidebar.markdown(get_binary_file_downloader_html('Data/template.xlsx', 'Download Input Template'), unsafe_allow_html=True)
-st.sidebar.markdown(get_binary_file_downloader_html(demo_path, 'Download Input Template'), unsafe_allow_html=True)
+# st.sidebar.markdown(get_binary_file_downloader_html(demo_path, 'Download Input Template'), unsafe_allow_html=True)
+# with open(demo_path) as demo_file:
+#     st.sidebar.download_button('Download Template',demo_file,file_name='template.xlsx')
 uploaded_file = st.sidebar.file_uploader('Upload your input Excel file', type=['xlsx'])
 
 # Main Panel
