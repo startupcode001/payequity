@@ -18,7 +18,7 @@ from pathlib import Path
 
 # Set Path
 st.set_page_config(layout="wide")
-demo_path = Path(__file__).parents[0].__str__()+'\\Data\\template.xlsx'
+demo_path = Path(__file__).parents[0].__str__()+'/Data/template.xlsx'
 
 st.write(demo_path)
 
