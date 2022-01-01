@@ -47,7 +47,7 @@ df, df_org, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2
 # Side Panel
 st.sidebar.header('Start here')
 st.sidebar.markdown("""
-[Example CSV file](demo_path)
+[Example Template file](https://github.com/startupcode001/payequity/blob/main/Data/template.xlsx)
 """)
 # st.sidebar.markdown(get_binary_file_downloader_html('Data/template.xlsx', 'Download Input Template'), unsafe_allow_html=True)
 # st.sidebar.markdown(get_binary_file_downloader_html(demo_path, 'Download Input Template'), unsafe_allow_html=True)
