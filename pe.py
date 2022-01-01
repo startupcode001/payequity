@@ -35,7 +35,7 @@ st.write(demo_path)
 @st.experimental_memo
 # Run Demo File
 def run_demo(demo_path):
-    df_demo = pd.read_excel(r'Data\template.xlsx',sheet_name="Submission")
+    df_demo = pd.read_excel(r'template.xlsx',sheet_name="Submission")
     df, df_org, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2, female_coff, female_pvalue, plot_gender = run(df_demo)
     return df, df_org, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2, female_coff, female_pvalue, plot_gender
 df, df_org, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2, female_coff, female_pvalue, plot_gender = run_demo(demo_path)
