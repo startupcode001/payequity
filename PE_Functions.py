@@ -15,6 +15,8 @@ import statsmodels.api as sm
 from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
 from statsmodels.sandbox.regression.predstd import wls_prediction_std
 
+from math import pi
+
 # Helper Functions Starts here #
 
 def rename_column(df):
@@ -51,6 +53,44 @@ def plot_gender_gap(coff):
                  'threshold' : {'line': {'color': "blue", 'width': 1}, 'thickness': 0.5, 'value': 1}
                 }))
     return fig
+
+def plot_pie_2(ratio):
+    labels = ['','{}% of the drivers'.format(round(ratio*100,))]
+    sizes = [1-ratio, ratio]
+    pcts = labels
+    width = 0.5
+
+    fig_pie_1, ax1 = plt.subplots()
+    ax1.axis('equal')
+
+    pie, _ = ax1.pie(
+        sizes,
+        startangle=90,
+        # labels=pcts,
+    #    labeldistance=.8,
+    #    rotatelabels=True,
+        colors = ["whitesmoke", "gold"]
+    )
+    plt.text(0, -3, labels, ha='center', va='center', fontsize=12)
+
+    plt.setp(pie, width=width, edgecolor='white')
+
+    return fig_pie_1
+
+def plot_pie(ratio):
+    fig, ax = plt.subplots(figsize=(6, 6), subplot_kw={'projection':'polar'})
+    data = round(ratio*100,0)
+    startangle = 90
+    x = (data * pi *2)/ 100
+    left = (startangle * pi *2)/ 360 #this is to control where the bar starts
+    plt.xticks([])
+    plt.yticks([])
+    ax.spines.clear()
+    ax.barh(1, x, left=left, height=1, color='#5DADE2') 
+    plt.ylim(-3, 3)
+    plt.text(0, -3, data, ha='center', va='center', fontsize=22)
+    return fig
+
 
 def clean_req_feature(data, feature, valid_feature_list, warning_message, data_type="string", 
                       val_col = 'VALIDATION_MESSAGE',val_flag_col = 'VALIDATION_FLAG'):
@@ -305,5 +345,11 @@ def run(data=None):
 
     # Graphs
     plot_gender = plot_gender_gap(female_coff)
+    fig_pie = plot_pie(1+female_coff)
     
-    return df, df_org, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2, female_coff, female_pvalue, plot_gender
+    # Statistics for output
+    hc_female = df[(df['GENDER']=='F') | (df['GENDER']=='FEMALE')].shape[0]
+    
+    # print(message.loc[['OVERVIEW']]['Message'])
+    
+    return df, df_org, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2, female_coff, female_pvalue, fig_pie, before_clean_record, after_clean_record,hc_female
