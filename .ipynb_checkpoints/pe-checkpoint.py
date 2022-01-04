@@ -29,16 +29,16 @@ def get_binary_file_downloader_html(bin_file, file_label='File'):
         data = f.read()
     bin_str = base64.b64encode(data).decode()
     # href = f'<a href="data:application/octet-stream;base64,{bin_str}" download="{bin_file}">{file_label}</a>'
-    href = f'<a href="data:application/octet-stream;base64,{bin_str}" download="{os.path.basename(bin_file)}">Download {file_label}</a>'
+    href = f'<a href="data:application/octet-stream;base64,{bin_str}" download="{os.path.basename(bin_file)}">{file_label}</a>'
     return href
 
 @st.experimental_memo
 # Run Demo File
 def run_demo(demo_path):
     df_demo = pd.read_excel(demo_path,sheet_name="Submission")
-    df, df_org, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2, female_coff, female_pvalue, fig_pie, before_clean_record, after_clean_record,hc_female = run(df_demo)
-    return df, df_org, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2, female_coff, female_pvalue, fig_pie,before_clean_record, after_clean_record,hc_female
-df, df_org, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2, female_coff, female_pvalue, fig_pie,before_clean_record, after_clean_record,hc_female = run_demo(demo_path)
+    df, df_org, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2, female_coff, female_pvalue, before_clean_record, after_clean_record,hc_female,fig_r2_gender_gap,fig_raw_gender_gap,fig_net_gender_gap = run(df_demo)
+    return df, df_org, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2, female_coff, female_pvalue, before_clean_record, after_clean_record,hc_female,fig_r2_gender_gap,fig_raw_gender_gap,fig_net_gender_gap
+df, df_org, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2, female_coff, female_pvalue, before_clean_record, after_clean_record,hc_female,fig_r2_gender_gap,fig_raw_gender_gap,fig_net_gender_gap = run_demo(demo_path)
 
 @st.cache
 def convert_df(df):
@@ -46,8 +46,35 @@ def convert_df(df):
     return df.to_csv().encode('utf-8')
 demo_validation = convert_df(df_org)
 
-# UI *********************************
 
+# Navigation Bar
+
+st.markdown('<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">', unsafe_allow_html=True)
+
+st.markdown("""
+<nav class="navbar fixed-top navbar-expand-lg navbar-dark" style="background-color: #3498DB;">
+  <a class="navbar-brand" href="https://youtube.com/dataprofessor" target="_blank">Pay Equity</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNav">
+    <ul class="navbar-nav">
+      <li class="nav-item active">
+        <a class="nav-link disabled" href="#">Home <span class="sr-only">(current)</span></a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="https://youtube.com/dataprofessor" target="_blank">Sign up/Login in</a>
+      </li>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="https://twitter.com/thedataprof" target="_blank">About Us</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+""", unsafe_allow_html=True)
+
+# UI *********************************
 # 'Hello :sunglasses: :heart: '
 
 # Side Panel
@@ -83,17 +110,37 @@ with main_page.container():
             m_col1_but_col1.metric('💬 Submission Record',before_clean_record)
             m_col1_but_col2.metric('🏆 Successful Run',after_clean_record)
             m_col1_but_col3.metric('👩 Female %',round(hc_female/after_clean_record,3)*100)
-            m_col1_but_col4.download_button('📥 Download Validation as CSV', data=demo_validation, file_name='Data Validation.csv')
+            m_col1_but_col4.download_button('📥 Download exclusions', data=demo_validation, file_name='Data Validation.csv')
             
-            # Show R2, Raw Gap, Net Gap
-            metric_1, metric_2, metric_3 = main_page.columns((1, 1, 1))            
-            metric_1.markdown("<h1 style='text-align: center; color: lightblue;'>Model Robustness</h1>", unsafe_allow_html=True)
-            metric_1.pyplot(fig_pie, use_container_width=True)
-
-            metric_2.markdown("<h1 style='text-align: center; color: white; background-color: Green'>Market Benchmark</h1>", unsafe_allow_html=True)
-            metric_2.write('In general, model robusiness should be greater than 70%')
+            # Show R2
+            metric_R2_1, metric_R2_2, metric_R2_3 = main_page.columns((1, 1, 1))            
+            metric_R2_1.markdown("<h1 style='text-align: left; vertical-align: bottom; font-size: 200%; color: #3498DB; opacity: 0.7'>Robustness</h1>", unsafe_allow_html=True)
+            metric_R2_1.pyplot(fig_r2_gender_gap, use_container_width=True)
             
-            metric_3.markdown("<h1 style='text-align: center; color: white; background-color: Green';font-size: 1em>Observation</h1>", unsafe_allow_html=True)
+            metric_R2_2.markdown("<h1 style='text-align: left; vertical-align: bottom;color: #3498DB; font-size: 200%; opacity: 0.7'>Benchmark</h1>", unsafe_allow_html=True)
+            metric_R2_2.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 150%; opacity: 0.7'> 🌐 70% ~ 100%  </h1>" "  \n"  "Model Robutness measures how well the pay factors drive pay decisions. For example 80% means pay factors explain 80 percent of the pay variation among employees.", unsafe_allow_html=True)
+            
+            metric_R2_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: #3498DB; font-size: 200%; opacity: 0.7'>Observation</h1>", unsafe_allow_html=True)
+            if r2>=0.7:
+                metric_R2_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 150%; opacity: 0.7'> ✔️ Align with market  </h1>" "  \n"  "The higher robustness, the more accurate the model make pay explination and predictions", unsafe_allow_html=True)
+            else:
+                metric_R2_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 150%; opacity: 0.7'> ✖️ Below market  </h1>" "  \n"  "The lower robutness, the lesser accurate the standard model make pay explaination and predictions. In general, we can improve robustness by including additional pay factors not captured by standard model, such as high potential, cost center, skills, etc. Please contact us for a free consultation.", unsafe_allow_html=True)
+                
+            # metric_R2_3.markdown("<h1 style='text-align: center; vertical-align: bottom; color: Black; background-color: #3498DB; opacity: 0.7; border-style: dotted'>Observation</h1>", unsafe_allow_html=True)
+            
+            # Show Net Gap
+            metric_net_gap_1, metric_net_gap_2, metric_net_gap_3 = main_page.columns((1, 1, 1))            
+            metric_net_gap_1.markdown("<h1 style='text-align: left; vertical-align: bottom; font-size: 200%; color: #3498DB; opacity: 0.7'>Gender Net Gap</h1>", unsafe_allow_html=True)
+            metric_net_gap_1.plotly_chart(fig_net_gender_gap, use_container_width=True)
+            
+            metric_net_gap_2.markdown("<h1 style='text-align: left; vertical-align: bottom;color: #3498DB; font-size: 200%; opacity: 0.7'>Benchmark</h1>", unsafe_allow_html=True)
+            metric_net_gap_2.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 150%; opacity: 0.7'> 🌐 <5% </h1>" "  \n"  "Model Robutness measures how well the pay factors drive pay decisions. For example 80% means pay factors explain 80 percent of the pay variation among employees.", unsafe_allow_html=True)
+            
+            metric_net_gap_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: #3498DB; font-size: 200%; opacity: 0.7'>Observation</h1>", unsafe_allow_html=True)
+            if r2>=0.7:
+                metric_net_gap_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 150%; opacity: 0.7'> ✔️ Align with market  </h1>" "  \n"  "The higher robustness, the more accurate the model make pay explination and predictions", unsafe_allow_html=True)
+            else:
+                metric_net_gap_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 150%; opacity: 0.7'> ✖️ Below market  </h1>" "  \n"  "The lower robutness, the lesser accurate the standard model make pay explaination and predictions. In general, we can improve robustness by including additional pay factors not captured by standard model, such as high potential, cost center, skills, etc. Please contact us for a free consultation.", unsafe_allow_html=True)
             
         if m_col2_but:
             main_page.empty()

@@ -30,66 +30,95 @@ def rename_column(df):
     df.columns = [c.strip().upper().replace('__', '_') for c in df.columns]
     return df
 
+# def plot_gender_gap(coff):
+#     female_coff = coff
+#     bar_before = {'color': "lightgrey"}
+#     bar_after = {'color': "green"}
+#     bar_now = bar_before
+#     if female_coff>=0:
+#         bar_now = bar_after
+    
+#     fig = go.Figure(go.Indicator(
+#         domain = {'x': [0, 1], 'y': [0, 1]},
+#         value = 1+round(female_coff,2),
+#         mode = "gauge+number+delta",
+#         title = {'text': "Women earn {} dollar for every 1 dollar earn by Men".format(1+round(female_coff,2))},
+#         delta = {'reference': 1},
+#         gauge = {'bar':bar_now,
+#                  'axis': {'range': [-0.1,0.1]},
+#                  'steps' : [
+#                      {'range': [0.95, 1.2], 'color': "lightgreen"},
+#                      {'range': [0.8, 0.95], 'color': "white"}
+#                  ],
+#                  'threshold' : {'line': {'color': "blue", 'width': 1}, 'thickness': 0.5, 'value': 0}
+#                 }))
+#     return fig
+
 def plot_gender_gap(coff):
     female_coff = coff
-    bar_before = {'color': "lightgrey"}
-    bar_after = {'color': "green"}
+    bar_before = {'color': "grey"}
+    bar_after = {'color': "lightgreen"}
     bar_now = bar_before
-    if female_coff>=0:
+    if female_coff>=-0.05:
         bar_now = bar_after
     
     fig = go.Figure(go.Indicator(
         domain = {'x': [0, 1], 'y': [0, 1]},
-        value = 1+round(female_coff,2),
-        mode = "gauge+number+delta",
-        title = {'text': "Women earn {} dollar for every 1 dollar earn by Men".format(1+round(female_coff,2))},
-        delta = {'reference': 1},
+        value = round(female_coff*100,1),
+        mode = "gauge+number",
+        number = {'suffix': "%"},
+        number_font_size = 35,
+        # number_font_color = '#5DADE2',
+        title = {'text': ""},
         gauge = {'bar':bar_now,
-                 'axis': {'range': [0.8,1.2]},
+                 'axis': {'range': [-20,20], 'ticksuffix':"%", 'tickmode':'linear','tick0':-20,'dtick':5 },
                  'steps' : [
-                     {'range': [0.95, 1.2], 'color': "lightgreen"},
-                     {'range': [0.8, 0.95], 'color': "white"}
+                     {'range': [-20, -5], 'color': "white"},
+                     {'range': [-5, 20], 'color': "lightgreen"}
                  ],
-                 'threshold' : {'line': {'color': "blue", 'width': 1}, 'thickness': 0.5, 'value': 1}
+                 'threshold' : {'line': {'color': "green", 'width': 1}, 'thickness': 0.5, 'value': -5}
                 }))
+    fig.update_layout(autosize=False, margin=dict(l=25,r=25,b=0,t=0,pad=5))
+                     
     return fig
 
-def plot_pie_2(ratio):
-    labels = ['','{}% of the drivers'.format(round(ratio*100,))]
-    sizes = [1-ratio, ratio]
-    pcts = labels
-    width = 0.5
-
-    fig_pie_1, ax1 = plt.subplots()
-    ax1.axis('equal')
-
-    pie, _ = ax1.pie(
-        sizes,
-        startangle=90,
-        # labels=pcts,
-    #    labeldistance=.8,
-    #    rotatelabels=True,
-        colors = ["whitesmoke", "gold"]
-    )
-    plt.text(0, -3, labels, ha='center', va='center', fontsize=12)
-
-    plt.setp(pie, width=width, edgecolor='white')
-
-    return fig_pie_1
-
-def plot_pie(ratio):
+def plot_full_pie(ratio,plot_type):
+    if plot_type=='r2' and ratio >= 0.7:
+        color = '#5DADE2'
+    else:
+        color = 'Silver'
+    
     fig, ax = plt.subplots(figsize=(6, 6), subplot_kw={'projection':'polar'})
-    data = round(ratio*100,0)
+    data = round(ratio*100)
+    data_label = str(data).strip(".0")+'%'
     startangle = 90
     x = (data * pi *2)/ 100
     left = (startangle * pi *2)/ 360 #this is to control where the bar starts
+    print(left)
     plt.xticks([])
     plt.yticks([])
     ax.spines.clear()
-    ax.barh(1, x, left=left, height=1, color='#5DADE2') 
+    ax.barh(1, x, left=left, height=1.5, color=color) 
     plt.ylim(-3, 3)
-    plt.text(0, -3, data, ha='center', va='center', fontsize=22)
+    plt.text(0, -3, data_label, ha='center', va='center', fontsize=25)
     return fig
+
+def plot_half_pie(ratio,ratio_max, plot_type):
+    # data
+    label = [plot_type, ""]
+    val = [ratio,ratio_max-ratio,]
+
+    # append data and assign color
+    label.append("")
+    val.append(sum(val))  # 50% blank
+    colors = ['red', 'blue', 'green', 'white']
+
+    # plot
+    fig = plt.figure(figsize=(8,6),dpi=100)
+    ax = fig.add_subplot(1,1,1)
+    ax.pie(val, labels=label, colors=colors)
+    ax.add_artist(plt.Circle((0, 0), 0.6, color='white'))
+    fig.show()
 
 
 def clean_req_feature(data, feature, valid_feature_list, warning_message, data_type="string", 
@@ -343,13 +372,15 @@ def run(data=None):
     y_pred = results_predict.predict(x_predict)
     std, lower, upper = wls_prediction_std(results_predict)
 
+    r2 = 0.91
     # Graphs
-    plot_gender = plot_gender_gap(female_coff)
-    fig_pie = plot_pie(1+female_coff)
+    fig_r2_gender_gap = plot_full_pie(r2,'r2')
+    fig_raw_gender_gap = plot_gender_gap(female_coff)
+    fig_net_gender_gap = plot_gender_gap(female_coff)
     
     # Statistics for output
     hc_female = df[(df['GENDER']=='F') | (df['GENDER']=='FEMALE')].shape[0]
     
     # print(message.loc[['OVERVIEW']]['Message'])
     
-    return df, df_org, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2, female_coff, female_pvalue, fig_pie, before_clean_record, after_clean_record,hc_female
+    return df, df_org, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2, female_coff, female_pvalue, before_clean_record, after_clean_record,hc_female,fig_r2_gender_gap,fig_raw_gender_gap,fig_net_gender_gap
