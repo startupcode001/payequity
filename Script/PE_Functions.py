@@ -408,10 +408,10 @@ def reme(df,budget_df,X_full,factor, project_group_feature, protect_group_class)
     adj_budget_pct = budget/current_total_salary
     
     # print(results.summary())
-    # print(resulting_gap)
-    # print(resulting_pvalues)
-    # print(adj_count)
-    # print(adj_budget_pct)
+    print(resulting_gap)
+    print(resulting_pvalues)
+    print(adj_count)
+    print(adj_budget_pct)
     # budget_df.to_excel('check_final_budget.xlsx')
 
     return budget_df, budget, resulting_gap, resulting_pvalues, adj_count, adj_budget_pct

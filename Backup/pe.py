@@ -21,14 +21,8 @@ from pathlib import Path
 st.set_page_config(layout="wide")
 demo_path = Path(__file__).parents[0].__str__()+'/Data/template.xlsx'
 
-# Set functions
-@st.experimental_memo(show_spinner=False)
-def convert_df(df):
-    # IMPORTANT: Cache the conversion to prevent computation on every rerun
-    return df.to_csv().encode('utf-8')
-
 # Function
-@st.experimental_memo(show_spinner=False)
+@st.experimental_memo
 # Download Excel Template
 def get_binary_file_downloader_html(bin_file, file_label='File'):
     with open(bin_file, 'rb') as f:
@@ -38,103 +32,21 @@ def get_binary_file_downloader_html(bin_file, file_label='File'):
     href = f'<a href="data:application/octet-stream;base64,{bin_str}" download="{os.path.basename(bin_file)}">{file_label}</a>'
     return href
 
-@st.experimental_memo(show_spinner=False)
-# Run Goal Seek for insignificant gap and 0 gap
-def reme_gap_seek(df,budget_df,X_full, project_group_feature, protect_group_class, seek_goal):
-    factor_range = np.arange(2, -2,-0.001)
-    threshold = 0.0005
-    
-    seek_budget_df = np.nan
-    seek_budget = np.nan
-    seek_resulting_gap  = np.nan
-    seek_resulting_pvalues =  np.nan
-    seek_adj_count = np.nan
-    seek_adj_budget_pct = np.nan
-    seek_success = False
-        
-    for factor in factor_range:
-        budget_df, budget, resulting_gap, resulting_pvalues, adj_count, adj_budget_pct = reme(df,budget_df,X_full,factor, project_group_feature, protect_group_class)
-        
-        if np.abs(resulting_gap-seek_goal)<=threshold:
-            seek_budget_df = budget_df
-            seek_budget = budget
-            seek_resulting_gap  = resulting_gap
-            seek_resulting_pvalues =  resulting_pvalues
-            seek_adj_count = adj_count
-            seek_adj_budget_pct = adj_budget_pct
-            seek_success = True
-            
-            print('Found factor that close gap:' + str(factor))
-            print('Final Gap is '+str(seek_resulting_gap))
-            print('Final p_value is '+str(seek_resulting_pvalues))
-            print('Final Budget is '+str(seek_budget))
-            print('Final Budget % '+str(seek_adj_budget_pct))
-            break
-        
-    if seek_budget == np.nan:
-        print('no result found')
-        seek_success = False
-    
-    return seek_budget_df,seek_budget,seek_resulting_gap,seek_resulting_pvalues,seek_adj_count, seek_adj_budget_pct,seek_success
-    
-@st.experimental_memo(show_spinner=False)
-# Run Goal Seek for insignificant gap and 0 gap
-def reme_pvalue_seek(df,budget_df,X_full, project_group_feature, protect_group_class, seek_goal, current_pvalue):
-    
-    factor_range = np.arange(2, -2,-0.001)
-    threshold = 0.0005
-    
-    seek_budget_df = np.nan
-    seek_budget = np.nan
-    seek_resulting_gap  = np.nan
-    seek_resulting_pvalues =  np.nan
-    seek_adj_count = np.nan
-    seek_adj_budget_pct = np.nan
-    seek_success = False
-    
-    if current_pvalue>=0.05:
-        print('Current P value already greater than 5%: '+str(current_pvalue))
-        seek_success = False
-    else:
-        for factor in factor_range:
-            budget_df, budget, resulting_gap, resulting_pvalues, adj_count, adj_budget_pct = reme(df,budget_df,X_full,factor, project_group_feature, protect_group_class)
+@st.experimental_memo
+# Run Demo File
+def run_demo(demo_path):
+    df_demo = pd.read_excel(demo_path,sheet_name="Submission")
+    df, df_org, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2, female_coff, female_pvalue, before_clean_record, after_clean_record,hc_female,fig_r2_gender_gap,fig_raw_gender_gap,fig_net_gender_gap = run(df_demo)
+    return df, df_org, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2, female_coff, female_pvalue, before_clean_record, after_clean_record,hc_female,fig_r2_gender_gap,fig_raw_gender_gap,fig_net_gender_gap
+df, df_org, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2, female_coff, female_pvalue, before_clean_record, after_clean_record,hc_female,fig_r2_gender_gap,fig_raw_gender_gap,fig_net_gender_gap = run_demo(demo_path)
 
-            if np.abs(resulting_pvalues-seek_goal)<=threshold:
-                seek_budget_df = budget_df
-                seek_budget = budget
-                seek_resulting_gap  = resulting_gap
-                seek_resulting_pvalues =  resulting_pvalues
-                seek_adj_count = adj_count
-                seek_adj_budget_pct = adj_budget_pct
-                seek_success = True
+@st.cache
+def convert_df(df):
+    # IMPORTANT: Cache the conversion to prevent computation on every rerun
+    return df.to_csv().encode('utf-8')
+demo_validation = convert_df(df_org)
 
-                print('Found factor that close gap:' + str(factor))
-                print('Final Gap is '+str(seek_resulting_gap))
-                print('Final p_value is '+str(seek_resulting_pvalues))
-                print('Final Budget is '+str(seek_budget))
-                print('Final Budget % '+str(seek_adj_budget_pct))
-                break
 
-        if seek_budget == np.nan:
-            print('no result found')
-            seek_success = False
-    
-    return seek_budget_df,seek_budget,seek_resulting_gap,seek_resulting_pvalues,seek_adj_count, seek_adj_budget_pct,seek_success
-    
-# Set Style
-
-# m = st.markdown("""
-#     <style>
-#     div.stButton > button:first-child {
-#         background-color: #0099ff;
-#         color:#ffffff;
-#     }
-#     div.stButton > button:hover {
-#         background-color: #00ff00;
-#         color:#ff0000;
-#         }
-#     </style>""", unsafe_allow_html=True)   
-    
 # Navigation Bar
 
 st.markdown('<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">', unsafe_allow_html=True)
@@ -165,31 +77,13 @@ st.markdown("""
 </nav>
 """, unsafe_allow_html=True)
 
-# Set Style
-# m = st.markdown("""
-#     <style>
-#     div.stButton > button:first-child {box-shadow: 0px 0px 0px 2px #9fb4f2;background-color:#3498DB;border-radius:10px;border:1px solid #3498DB;display:inline-block;cursor:pointer;color:#ffffff;font-family:Arial;font-size:13px;padding:12px 37px;text-decoration:none;text-shadow:0px 1px 0px #283966;
-#     &:hover {background-color:#476e9e;}
-#     &:active {position:relative;top:1px;}}
-#     </style>""", unsafe_allow_html=True)
-
-
 # UI *********************************
 # 'Hello :sunglasses: :heart: '
-
-# st.dataframe(budget_df.head(4))
-# st.dataframe(X_full)
-
-
-# Setup Session State:
-if 'demo_run' not in st.session_state:
-    st.session_state['demo_run'] = 'no'
 
 # Side Panel
 st.sidebar.header('Start here')
 st.sidebar.markdown(get_binary_file_downloader_html(demo_path, 'Download Input Template'), unsafe_allow_html=True)
 uploaded_file = st.sidebar.file_uploader('Upload your input Excel file', type=['xlsx'])
-st.sidebar.markdown("""---""")
 
 # Main Panel
 c1, c2 = st.columns((1.5, 1))
@@ -212,29 +106,6 @@ with main_page.container():
         
         if m_col1_but:
             # main_page_info.empty()
-            st.session_state.demo_run = 'yes'
-            with st.spinner('Running model, Please wait for it...'):
-                # Demo Run
-                m_info = main_page_info.success('Initialize Data')
-                df_demo = pd.read_excel(demo_path,sheet_name="Submission")
-                
-                # Run discovery model: demo
-                m_info = main_page_info.success('Running Gap Analysis')
-                df, df_org, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2, female_coff, female_pvalue, before_clean_record, after_clean_record,hc_female,fig_r2_gender_gap,fig_raw_gender_gap,fig_net_gender_gap,X_full,budget_df = run(df_demo)
-                
-                # Run Reme Pvalue = 7%
-                m_info = main_page_info.success('Running Remediation Statistical Significant')
-                seek_budget_df,seek_budget,seek_resulting_gap,seek_resulting_pvalues,seek_adj_count, seek_adj_budget_pct,seek_success = reme_pvalue_seek(df,budget_df,X_full, project_group_feature='GENDER', protect_group_class='F', seek_goal=0.07, current_pvalue = female_coff)
-                # Run Reme Zero Gap
-                m_info = main_page_info.success('Running Remediation Zero Gap')
-                seek_budget_df,seek_budget,seek_resulting_gap,seek_resulting_pvalues,seek_adj_count, seek_adj_budget_pct,seek_success = reme_gap_seek(df,budget_df,X_full, project_group_feature='GENDER', protect_group_class='F', seek_goal=0)
-                
-                # Run data validation
-                m_info = main_page_info.success('Output Data Validation')
-                demo_validation = convert_df(df_org)
-                
-            
-            # Display run is successful message    
             m_info = main_page_info.success('View Demo: '+message.loc[['OVERVIEW']][0])
             
             main_page.markdown("""---""")
@@ -283,18 +154,7 @@ with main_page.container():
             overview_2.write('The lower robutness, the lesser accurate the standard model make pay explaination and predictions. In general, we can improve robustness by including additional pay factors not captured by standard model, such as high potential, cost center, skills, etc. Please contact us for a free consultation',use_column_width='auto')
             
             main_page.markdown("""---""")
-            s1, scenario_A, scenario_B, s2 = main_page.columns((1, 1, 1, 1))
-            # scenario_A.button('📥 Download exclusions')
             
-            # Run remediation model: demo goal seek on gap        
-            if s1.button('Run Scenarios') or st.session_state.demo_run == 'yes':
-                s1.markdown(seek_budget)
-                s1.success('Done!')
-
-#             print('Discovery model p value is: '+str(female_pvalue))
-
-#             seek_budget_df,seek_budget,seek_resulting_gap,seek_resulting_pvalues,seek_adj_count, seek_adj_budget_pct,seek_success = reme_pvalue_seek(df,budget_df,X_full, project_group_feature='GENDER', protect_group_class='F', seek_goal=0.07, current_pvalue = female_pvalue)
-
             
         if m_col2_but:
             main_page.empty()

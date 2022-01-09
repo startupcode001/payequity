@@ -30,30 +30,6 @@ def rename_column(df):
     df.columns = [c.strip().upper().replace('__', '_') for c in df.columns]
     return df
 
-# def plot_gender_gap(coff):
-#     female_coff = coff
-#     bar_before = {'color': "lightgrey"}
-#     bar_after = {'color': "green"}
-#     bar_now = bar_before
-#     if female_coff>=0:
-#         bar_now = bar_after
-    
-#     fig = go.Figure(go.Indicator(
-#         domain = {'x': [0, 1], 'y': [0, 1]},
-#         value = 1+round(female_coff,2),
-#         mode = "gauge+number+delta",
-#         title = {'text': "Women earn {} dollar for every 1 dollar earn by Men".format(1+round(female_coff,2))},
-#         delta = {'reference': 1},
-#         gauge = {'bar':bar_now,
-#                  'axis': {'range': [-0.1,0.1]},
-#                  'steps' : [
-#                      {'range': [0.95, 1.2], 'color': "lightgreen"},
-#                      {'range': [0.8, 0.95], 'color': "white"}
-#                  ],
-#                  'threshold' : {'line': {'color': "blue", 'width': 1}, 'thickness': 0.5, 'value': 0}
-#                 }))
-#     return fig
-
 def plot_gender_gap(coff):
     female_coff = coff
     bar_before = {'color': "grey"}
@@ -67,7 +43,7 @@ def plot_gender_gap(coff):
         value = round(female_coff*100,1),
         mode = "gauge+number",
         number = {'suffix': "%"},
-        number_font_size = 35,
+        number_font_size = 25,
         # number_font_color = '#5DADE2',
         title = {'text': ""},
         gauge = {'bar':bar_now,
@@ -78,7 +54,7 @@ def plot_gender_gap(coff):
                  ],
                  'threshold' : {'line': {'color': "green", 'width': 1}, 'thickness': 0.5, 'value': -5}
                 }))
-    fig.update_layout(autosize=False, margin=dict(l=25,r=25,b=0,t=0,pad=5))
+    fig.update_layout(autosize=False, margin=dict(l=20,r=20,b=0,t=0,pad=1), width = 300, height = 200)
                      
     return fig
 
@@ -125,7 +101,11 @@ def clean_req_feature(data, feature, valid_feature_list, warning_message, data_t
                       val_col = 'VALIDATION_MESSAGE',val_flag_col = 'VALIDATION_FLAG'):
     da = data.copy()
     # Check exclusion and remove invalid data
-    if data_type == "numeric":
+    if (data_type == "numeric") and (feature == 'SALARY'):
+        da[feature] = pd.to_numeric(da[feature], errors='coerce')
+        da.loc[(da[feature].isna()) | (da[feature]<=0), val_flag_col] = 1
+        exclude_feature_num = sum(da[feature].isna()*1)+sum((da[feature]<=0)*1)
+    elif data_type == "numeric":
         # Numeric features, exclude nan, strings
         da[feature] = pd.to_numeric(da[feature], errors='coerce')
         exclude_feature_num = sum(da[feature].isna()*1)
@@ -263,7 +243,8 @@ def run(data=None):
     message = message['Message']
     
     # 2.3 Feature Engineering ****************************
-    df = df.set_index('EEID', drop=True)
+    # df_saveID = df['EEID']
+    # df = df.set_index('EEID', drop=True)
     # col_list=df.columns.tolist()
     filter_list = [x for x in df.columns.tolist() if x not in exclude_col]
     df = df[filter_list]
@@ -321,7 +302,7 @@ def run(data=None):
     col_list = df.columns
     
     # Remove all excess columns
-    add_exclude_col = ['SALARY','SNAPSHOT_DATE', 'VALIDATION_MESSAGE', 'VALIDATION_FLAG', 'NOW','DATE_OF_BIRTH','DATE_OF_HIRE']
+    add_exclude_col = ['EEID','SALARY','SNAPSHOT_DATE', 'VALIDATION_MESSAGE', 'VALIDATION_FLAG', 'NOW','DATE_OF_BIRTH','DATE_OF_HIRE']
     add_exclude_col_predict = add_exclude_col+['GENDER','ETHNICITY']
     exclude_col = exclude_col+add_exclude_col
     exclude_col_predict = exclude_col+add_exclude_col_predict
@@ -333,6 +314,10 @@ def run(data=None):
     f_raw = 'LOG_SALARY ~ GENDER'
     f_discover = model_col[-1] + ' ~ ' + ' + '.join(map(str, model_col[0:len(model_col)-1]))
     f_predict= model_col[-1] + ' ~ ' + ' + '.join(map(str, model_col_predict[0:len(model_col_predict)-1]))
+    
+    print(f_raw)
+    print(f_discover)
+    print(f_predict)
     
     # Gender Raw Gap
     y_raw, x_raw = dmatrices(f_raw, df, return_type='dataframe')
@@ -371,7 +356,13 @@ def run(data=None):
 
     y_pred = results_predict.predict(x_predict)
     std, lower, upper = wls_prediction_std(results_predict)
-
+    
+    # Save budget file for prediction
+    X_full = x_dis    
+    budget_df = pd.DataFrame({'EEID':df['EEID'], 'original': df['LOG_SALARY'], 'GENDER': df['GENDER'],'predicted':y_pred,'pred_lower': lower, 'pred_upper': upper, 'pred_stderr': std})
+#     X_full.to_excel('xfull.xlsx')
+#     df.to_excel('check_final.xlsx')
+#     budget_df.to_excel('check_final_budget.xlsx')
     r2 = 0.91
     # Graphs
     fig_r2_gender_gap = plot_full_pie(r2,'r2')
@@ -383,4 +374,44 @@ def run(data=None):
     
     # print(message.loc[['OVERVIEW']]['Message'])
     
-    return df, df_org, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2, female_coff, female_pvalue, before_clean_record, after_clean_record,hc_female,fig_r2_gender_gap,fig_raw_gender_gap,fig_net_gender_gap
+    return df, df_org, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2, female_coff, female_pvalue, before_clean_record, after_clean_record,hc_female,fig_r2_gender_gap,fig_raw_gender_gap,fig_net_gender_gap,X_full,budget_df
+
+
+def reme(df,budget_df,X_full,factor, project_group_feature, protect_group_class):
+    budget_df['adj_lower'] = budget_df['predicted'] - factor * budget_df['pred_stderr']
+
+    # Adjust protect group pay only, others set to original pay
+    budget_df['adj_salary'] = budget_df['original']
+    budget_df.loc[(budget_df[project_group_feature] == protect_group_class) & (budget_df['original'] < budget_df['adj_lower']),'adj_salary'] = budget_df['adj_lower']
+    
+    # Recalculate pay gap and p value with adjusted salary
+    model = sm.OLS(budget_df['adj_salary'], X_full)
+    results = model.fit()
+
+    budget = np.sum(np.exp(budget_df['adj_salary']) - np.exp(budget_df['original']))
+    budget_df['S_Salary'] = np.exp(budget_df['original'])
+    budget_df['S_Budget'] = np.exp(budget_df['adj_salary'])-np.exp(budget_df['original'])
+    budget_df['S_Adjusted'] = np.exp(budget_df['adj_salary'])
+    budget_df['S_AdjInd'] = 0
+    budget_df.loc[budget_df['S_Budget'] >0, 'S_AdjInd']=1
+
+    # Reporting
+    current_total_salary = np.sum(budget_df['S_Salary'])
+    Budget_PCT = budget_df['S_Budget']/np.exp(budget_df['original'])
+
+    target_position = 1
+    resulting_gap = results.params[target_position]
+    resulting_pvalues = results.pvalues[target_position]
+    adj_count = budget_df['S_AdjInd'].sum()
+    adj_average = Budget_PCT[Budget_PCT>0].mean()
+    adj_max = Budget_PCT[Budget_PCT>0].max()
+    adj_budget_pct = budget/current_total_salary
+    
+    # print(results.summary())
+    # print(resulting_gap)
+    # print(resulting_pvalues)
+    # print(adj_count)
+    # print(adj_budget_pct)
+    # budget_df.to_excel('check_final_budget.xlsx')
+
+    return budget_df, budget, resulting_gap, resulting_pvalues, adj_count, adj_budget_pct
