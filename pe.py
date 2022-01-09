@@ -41,7 +41,7 @@ def get_binary_file_downloader_html(bin_file, file_label='File'):
 @st.experimental_memo(show_spinner=False)
 # Run Goal Seek for insignificant gap and 0 gap
 def reme_gap_seek(df,budget_df,X_full, project_group_feature, protect_group_class, seek_goal):
-    factor_range = np.arange(2, -2,-0.001)
+    factor_range = np.arange(2, -2,-0.005)
     threshold = 0.0005
     
     seek_budget_df = np.nan
@@ -81,7 +81,7 @@ def reme_gap_seek(df,budget_df,X_full, project_group_feature, protect_group_clas
 # Run Goal Seek for insignificant gap and 0 gap
 def reme_pvalue_seek(df,budget_df,X_full, project_group_feature, protect_group_class, seek_goal, current_pvalue):
     
-    factor_range = np.arange(2, -2,-0.001)
+    factor_range = np.arange(2, -2,-0.005)
     threshold = 0.0005
     
     seek_budget_df = np.nan
