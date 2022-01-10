@@ -139,32 +139,6 @@ def reme_pvalue_seek(df,budget_df,X_full, project_group_feature, protect_group_c
 
 st.markdown('<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">', unsafe_allow_html=True)
 
-# st.markdown("""
-# <nav class="navbar fixed-top navbar-expand-lg navbar-dark" style="background-color: #3498DB;">
-#   <a class="navbar-brand" href="https://youtube.com/dataprofessor" target="_blank">Pay Equity</a>
-#   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-#     <span class="navbar-toggler-icon"></span>
-#   </button>
-#   <div class="collapse navbar-collapse" id="navbarNav">
-#     <ul class="navbar-nav">
-#       <li class="nav-item active">
-#         <a class="nav-link disabled" href="#">Home <span class="sr-only">(current)</span></a>
-#       </li>
-#       <li class="nav-item">
-#         <a class="nav-link" href="https://youtube.com/dataprofessor" target="_blank">Why It’s Important</a>
-#       </li>
-#       <li class="nav-item">
-#         <a class="nav-link" href="https://youtube.com/dataprofessor" target="_blank">Sign up/Login in</a>
-#       </li>
-#       </li>
-#       <li class="nav-item">
-#         <a class="nav-link" href="https://twitter.com/thedataprof" target="_blank">About Us</a>
-#       </li>
-#     </ul>
-#   </div>
-# </nav>
-# """, unsafe_allow_html=True)
-
 # Set Style
 # m = st.markdown("""
 #     <style>
@@ -182,8 +156,8 @@ st.markdown('<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootst
 
 
 # Setup Session State:
-if 'demo_run' not in st.session_state:
-    st.session_state['demo_run'] = 'no'
+# if 'demo_run' not in st.session_state:
+#     st.session_state['demo_run'] = 'no'
 
 # Side Panel
 st.sidebar.header('Start here')
@@ -212,7 +186,7 @@ with main_page.container():
         
         if m_col1_but:
             # main_page_info.empty()
-            st.session_state.demo_run = 'yes'
+            # st.session_state.demo_run = 'yes'
             with st.spinner('Running model, Please wait for it...'):
                 # Demo Run
                 m_info = main_page_info.success('Initialize Data')
@@ -233,7 +207,6 @@ with main_page.container():
                 m_info = main_page_info.success('Output Data Validation')
                 demo_validation = convert_df(df_org)
                 
-            
             # Display run is successful message    
             m_info = main_page_info.success('View Demo: '+message.loc[['OVERVIEW']][0])
             
@@ -283,13 +256,12 @@ with main_page.container():
             overview_2.write('The lower robutness, the lesser accurate the standard model make pay explaination and predictions. In general, we can improve robustness by including additional pay factors not captured by standard model, such as high potential, cost center, skills, etc. Please contact us for a free consultation',use_column_width='auto')
             
             main_page.markdown("""---""")
-            s1, scenario_A, scenario_B, s2 = main_page.columns((1, 1, 1, 1))
+            lm, s_Cur, s_A, s_B, rm = main_page.columns((1, 1, 1, 1))
             # scenario_A.button('📥 Download exclusions')
             
             # Run remediation model: demo goal seek on gap        
-            if s1.button('Run Scenarios') or st.session_state.demo_run == 'yes':
-                s1.markdown(seek_budget)
-                s1.success('Done!')
+            s1.markdown(seek_budget)
+            s1.success('Done!')
 
 #             print('Discovery model p value is: '+str(female_pvalue))
 
