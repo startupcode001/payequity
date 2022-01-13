@@ -100,10 +100,10 @@ with main_page.container():
         main_page_info.info('Use input file.')
     else:
         m_info = main_page_info.info('Awaiting the upload of the input file.')
-        m_col1,m_col2,t1 = main_page.columns((1, 1, 3))
+        m_col1,m_col2,t1 = main_page.columns((1, 1, 2))
         
-        m_col1_but = m_col1.button('See a demo')
-        m_col2_but = m_col2.button('Close a demo')
+        m_col1_but = m_col1.button('See demo')
+        m_col2_but = m_col2.button('Close demo')
         
         if m_col1_but:
             # main_page_info.empty()
