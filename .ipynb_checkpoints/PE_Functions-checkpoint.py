@@ -1,3 +1,4 @@
+import streamlit as st
 import pandas as pd
 import numpy as np
 
@@ -16,6 +17,8 @@ from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
 from statsmodels.sandbox.regression.predstd import wls_prediction_std
 
 from math import pi
+import base64
+import os
 
 # Helper Functions Starts here #
 
@@ -415,3 +418,112 @@ def reme(df,budget_df,X_full,factor, project_group_feature, protect_group_class)
     # budget_df.to_excel('check_final_budget.xlsx')
 
     return budget_df, budget, resulting_gap, resulting_pvalues, adj_count, adj_budget_pct
+
+# Set functions
+@st.experimental_memo(show_spinner=False)
+def convert_df(df):
+    # IMPORTANT: Cache the conversion to prevent computation on every rerun
+    return df.to_csv().encode('utf-8')
+
+# Function
+@st.experimental_memo(show_spinner=False)
+# Download Excel Template
+def get_binary_file_downloader_html(bin_file, file_label='File'):
+    with open(bin_file, 'rb') as f:
+        data = f.read()
+    bin_str = base64.b64encode(data).decode()
+    # href = f'<a href="data:application/octet-stream;base64,{bin_str}" download="{bin_file}">{file_label}</a>'
+    href = f'<a href="data:application/octet-stream;base64,{bin_str}" download="{os.path.basename(bin_file)}">{file_label}</a>'
+    return href
+
+@st.experimental_memo(show_spinner=False)
+# Run Goal Seek for insignificant gap and 0 gap
+def reme_gap_seek(df,budget_df,X_full, project_group_feature, protect_group_class, seek_goal, current_gap):
+    factor_range = np.arange(2, -2,-0.005)
+    threshold = 0.0005
+    
+    seek_budget_df = np.nan
+    seek_budget = np.nan
+    seek_resulting_gap  = np.nan
+    seek_resulting_pvalues =  np.nan
+    seek_adj_count = np.nan
+    seek_adj_budget_pct = np.nan
+    seek_pass = False
+    seek_success = False
+    
+    if current_gap>=0:
+        print('current gap is already >= 0')
+        seek_pass = False
+        seek_success = False
+    else:
+        seek_pass = True
+        for factor in factor_range:
+            budget_df, budget, resulting_gap, resulting_pvalues, adj_count, adj_budget_pct = reme(df,budget_df,X_full,factor, project_group_feature, protect_group_class)
+
+            if np.abs(resulting_gap-seek_goal)<=threshold:
+                seek_budget_df = budget_df
+                seek_budget = budget
+                seek_resulting_gap  = resulting_gap
+                seek_resulting_pvalues =  resulting_pvalues
+                seek_adj_count = adj_count
+                seek_adj_budget_pct = adj_budget_pct
+                seek_success = True
+
+                print('Found factor that close gap:' + str(factor))
+                print('Final Gap is '+str(seek_resulting_gap))
+                print('Final p_value is '+str(seek_resulting_pvalues))
+                print('Final Budget is '+str(seek_budget))
+                print('Final Budget % '+str(seek_adj_budget_pct))
+                break
+
+        if seek_budget == np.nan:
+            print('no result found')
+            seek_success = False
+    
+    return seek_budget_df,seek_budget,seek_resulting_gap,seek_resulting_pvalues,seek_adj_count, seek_adj_budget_pct,seek_pass,seek_success
+    
+@st.experimental_memo(show_spinner=False)
+# Run Goal Seek for insignificant gap and 0 gap
+def reme_pvalue_seek(df,budget_df,X_full, project_group_feature, protect_group_class, seek_goal, current_pvalue):
+    
+    factor_range = np.arange(2, -2,-0.005)
+    threshold = 0.0005
+    
+    seek_budget_df = np.nan
+    seek_budget = np.nan
+    seek_resulting_gap  = np.nan
+    seek_resulting_pvalues =  np.nan
+    seek_adj_count = np.nan
+    seek_adj_budget_pct = np.nan
+    seek_pass = False
+    seek_success = False
+    
+    if current_pvalue>=0.05:
+        print('Current P value already greater than 5%: '+str(current_pvalue))
+        seek_pass = False
+    else:
+        seek_pass = True
+        for factor in factor_range:
+            budget_df, budget, resulting_gap, resulting_pvalues, adj_count, adj_budget_pct = reme(df,budget_df,X_full,factor, project_group_feature, protect_group_class)
+
+            if np.abs(resulting_pvalues-seek_goal)<=threshold:
+                seek_budget_df = budget_df
+                seek_budget = budget
+                seek_resulting_gap  = resulting_gap
+                seek_resulting_pvalues =  resulting_pvalues
+                seek_adj_count = adj_count
+                seek_adj_budget_pct = adj_budget_pct
+                seek_success = True
+
+                print('Found factor that close gap:' + str(factor))
+                print('Final Gap is '+str(seek_resulting_gap))
+                print('Final p_value is '+str(seek_resulting_pvalues))
+                print('Final Budget is '+str(seek_budget))
+                print('Final Budget % '+str(seek_adj_budget_pct))
+                break
+
+        if seek_budget == np.nan:
+            print('no result found')
+            seek_success = False
+    
+    return seek_budget_df,seek_budget,seek_resulting_gap,seek_resulting_pvalues,seek_adj_count, seek_adj_budget_pct,seek_pass,seek_success

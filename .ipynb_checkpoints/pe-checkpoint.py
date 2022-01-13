@@ -13,124 +13,17 @@ import seaborn as sns
 import base64
 import os
 
+import locale
+
 from PE_Functions import *
 from pathlib import Path
 
 # Set Path
 st.set_page_config(layout="wide")
 demo_path = Path(__file__).parents[0].__str__()+'/Data/template.xlsx'
+locale.setlocale(locale.LC_ALL, 'en_US')
 
-# Set functions
-@st.experimental_memo(show_spinner=False)
-def convert_df(df):
-    # IMPORTANT: Cache the conversion to prevent computation on every rerun
-    return df.to_csv().encode('utf-8')
-
-# Function
-@st.experimental_memo(show_spinner=False)
-# Download Excel Template
-def get_binary_file_downloader_html(bin_file, file_label='File'):
-    with open(bin_file, 'rb') as f:
-        data = f.read()
-    bin_str = base64.b64encode(data).decode()
-    # href = f'<a href="data:application/octet-stream;base64,{bin_str}" download="{bin_file}">{file_label}</a>'
-    href = f'<a href="data:application/octet-stream;base64,{bin_str}" download="{os.path.basename(bin_file)}">{file_label}</a>'
-    return href
-
-@st.experimental_memo(show_spinner=False)
-# Run Goal Seek for insignificant gap and 0 gap
-def reme_gap_seek(df,budget_df,X_full, project_group_feature, protect_group_class, seek_goal, current_gap):
-    factor_range = np.arange(2, -2,-0.005)
-    threshold = 0.0005
-    
-    seek_budget_df = np.nan
-    seek_budget = np.nan
-    seek_resulting_gap  = np.nan
-    seek_resulting_pvalues =  np.nan
-    seek_adj_count = np.nan
-    seek_adj_budget_pct = np.nan
-    seek_pass = False
-    seek_success = False
-    
-    if current_gap>=0:
-        print('current gap is already >= 0')
-        seek_pass = False
-        seek_success = False
-    else:
-        seek_pass = True
-        for factor in factor_range:
-            budget_df, budget, resulting_gap, resulting_pvalues, adj_count, adj_budget_pct = reme(df,budget_df,X_full,factor, project_group_feature, protect_group_class)
-
-            if np.abs(resulting_gap-seek_goal)<=threshold:
-                seek_budget_df = budget_df
-                seek_budget = budget
-                seek_resulting_gap  = resulting_gap
-                seek_resulting_pvalues =  resulting_pvalues
-                seek_adj_count = adj_count
-                seek_adj_budget_pct = adj_budget_pct
-                seek_success = True
-
-                print('Found factor that close gap:' + str(factor))
-                print('Final Gap is '+str(seek_resulting_gap))
-                print('Final p_value is '+str(seek_resulting_pvalues))
-                print('Final Budget is '+str(seek_budget))
-                print('Final Budget % '+str(seek_adj_budget_pct))
-                break
-
-        if seek_budget == np.nan:
-            print('no result found')
-            seek_success = False
-    
-    return seek_budget_df,seek_budget,seek_resulting_gap,seek_resulting_pvalues,seek_adj_count, seek_adj_budget_pct,seek_pass,seek_success
-    
-@st.experimental_memo(show_spinner=False)
-# Run Goal Seek for insignificant gap and 0 gap
-def reme_pvalue_seek(df,budget_df,X_full, project_group_feature, protect_group_class, seek_goal, current_pvalue):
-    
-    factor_range = np.arange(2, -2,-0.005)
-    threshold = 0.0005
-    
-    seek_budget_df = np.nan
-    seek_budget = np.nan
-    seek_resulting_gap  = np.nan
-    seek_resulting_pvalues =  np.nan
-    seek_adj_count = np.nan
-    seek_adj_budget_pct = np.nan
-    seek_pass = False
-    seek_success = False
-    
-    if current_pvalue>=0.05:
-        print('Current P value already greater than 5%: '+str(current_pvalue))
-        seek_pass = False
-    else:
-        seek_pass = True
-        for factor in factor_range:
-            budget_df, budget, resulting_gap, resulting_pvalues, adj_count, adj_budget_pct = reme(df,budget_df,X_full,factor, project_group_feature, protect_group_class)
-
-            if np.abs(resulting_pvalues-seek_goal)<=threshold:
-                seek_budget_df = budget_df
-                seek_budget = budget
-                seek_resulting_gap  = resulting_gap
-                seek_resulting_pvalues =  resulting_pvalues
-                seek_adj_count = adj_count
-                seek_adj_budget_pct = adj_budget_pct
-                seek_success = True
-
-                print('Found factor that close gap:' + str(factor))
-                print('Final Gap is '+str(seek_resulting_gap))
-                print('Final p_value is '+str(seek_resulting_pvalues))
-                print('Final Budget is '+str(seek_budget))
-                print('Final Budget % '+str(seek_adj_budget_pct))
-                break
-
-        if seek_budget == np.nan:
-            print('no result found')
-            seek_success = False
-    
-    return seek_budget_df,seek_budget,seek_resulting_gap,seek_resulting_pvalues,seek_adj_count, seek_adj_budget_pct,seek_pass,seek_success
-    
 # Set Style
-
 # m = st.markdown("""
 #     <style>
 #     div.stButton > button:first-child {
@@ -154,6 +47,12 @@ def reme_pvalue_seek(df,budget_df,X_full, project_group_feature, protect_group_c
 #     &:hover {background-color:#476e9e;}
 #     &:active {position:relative;top:1px;}}
 #     </style>""", unsafe_allow_html=True)
+
+m = st.markdown("""
+    <style>
+    div.stButton > button:first-child {box-shadow: 0px 0px 0px 2px #3498DB;background-color:#3498DB;border-radius:10px;border:1px solid #3498DB;display:inline-block;cursor:pointer;color:#ffffff;font-family:Arial;font-size:13px;padding:12px 37px;text-decoration:none;
+    &:active {position:relative;top:1px;}}
+    </style>""", unsafe_allow_html=True)
 
 
 # UI *********************************
@@ -241,13 +140,13 @@ with main_page.container():
             metric_R2_1.pyplot(fig_r2_gender_gap, use_container_width=True)
             
             metric_R2_2.markdown("<h1 style='text-align: left; vertical-align: bottom;color: #3498DB; font-size: 150%; opacity: 0.7'>Benchmark</h1>", unsafe_allow_html=True)
-            metric_R2_2.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 100%; opacity: 0.7'> 🌐 70% ~ 100%  </h1>" "  \n"  "Model Robutness measures how well the pay factors drive pay decisions. For example 80% means pay factors explain 80 percent of the pay variation among employees.", unsafe_allow_html=True)
+            metric_R2_2.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 110%; opacity: 0.7'> 🌐 70% ~ 100%  </h1>" "  \n"  "Model Robutness measures how well the pay factors drive pay decisions. For example 80% means pay factors explain 80 percent of the pay variation among employees.", unsafe_allow_html=True)
             
             metric_R2_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: #3498DB; font-size: 150%; opacity: 0.7'>Observation</h1>", unsafe_allow_html=True)
             if r2>=0.7:
-                metric_R2_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 100%; opacity: 0.7'> ✔️ Align with market  </h1>" "  \n"  "The higher robustness, the more accurate the model make pay explination and predictions", unsafe_allow_html=True)
+                metric_R2_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 110%; opacity: 0.7'> ✔️ Align with market  </h1>" "  \n"  "The higher robustness, the more accurate the model make pay explination and predictions", unsafe_allow_html=True)
             else:
-                metric_R2_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Orange; font-size: 100%; opacity: 0.7'> ⚠️ Below market  </h1>" "  \n"  "The lower robutness, the lesser accurate the standard model make pay explaination and predictions. In general, we can improve robustness by including additional pay factors not captured by standard model, such as high potential, cost center, skills, etc. Please contact us for a free consultation.", unsafe_allow_html=True)
+                metric_R2_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Orange; font-size: 110%; opacity: 0.7'> ⚠️ Below market  </h1>" "  \n"  "The lower robutness, the lesser accurate the standard model make pay explaination and predictions. In general, we can improve robustness by including additional pay factors not captured by standard model, such as high potential, cost center, skills, etc. Please contact us for a free consultation.", unsafe_allow_html=True)
                 
             # metric_R2_3.markdown("<h1 style='text-align: center; vertical-align: bottom; color: Black; background-color: #3498DB; opacity: 0.7; border-style: dotted'>Observation</h1>", unsafe_allow_html=True)
             
@@ -257,14 +156,14 @@ with main_page.container():
             metric_net_gap_1.plotly_chart(fig_net_gender_gap, use_container_width=True)
             
             metric_net_gap_2.markdown("<h1 style='text-align: left; vertical-align: bottom;color: #3498DB; font-size: 150%; opacity: 0.7'>Benchmark</h1>", unsafe_allow_html=True)
-            metric_net_gap_2.write("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 100%; opacity: 0.7'> 🌐 > -5% </h1>" "For every 1 dollar paid to male employees, how much (lesser)/more is paid to female employees. For example -3% means on average female employees is paid 3% LOWER than male employees all else equal. Typically the net pay gap in US is between -5% and +1%", unsafe_allow_html=True)
+            metric_net_gap_2.write("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 110%; opacity: 0.7'> 🌐 > -5% </h1>" "For every 1 dollar paid to male employees, how much (lesser)/more is paid to female employees. For example -3% means on average female employees is paid 3% LOWER than male employees all else equal. Typically the net pay gap in US is between -5% and +1%", unsafe_allow_html=True)
             
             metric_net_gap_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: #3498DB; font-size: 150%; opacity: 0.7'>Observation</h1>", unsafe_allow_html=True)
             if female_coff>=-0.05:
-                metric_net_gap_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 100%; opacity: 0.7'> ✔️ Align with market  </h1>" "  \n"  "The smaller the pay gap, the better pay equity between genders", unsafe_allow_html=True)
+                metric_net_gap_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 110%; opacity: 0.7'> ✔️ Align with market  </h1>" "  \n"  "The smaller the pay gap, the better pay equity between genders", unsafe_allow_html=True)
             else:
-                metric_net_gap_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Orange; font-size: 100%; opacity: 0.7'> ⚠️ Below market  </h1>" "The larger the pay gap (negative), the bigger pay inequity between genders", unsafe_allow_html=True)
-                metric_net_gap_3.markdown("<h1 style='text-align: left; vertical-align: bottom; color: Orange; font-size: 100%; opacity: 0.7'> 📊 Yes - Statistical Significant  </h1>" "The larger the pay gap (negative), the bigger pay inequity between genders", unsafe_allow_html=True)
+                metric_net_gap_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Orange; font-size: 110%; opacity: 0.7'> ⚠️ Below market  </h1>" "The larger the pay gap (negative), the bigger pay inequity between genders", unsafe_allow_html=True)
+                metric_net_gap_3.markdown("<h1 style='text-align: left; vertical-align: bottom; color: Orange; font-size: 110%; opacity: 0.7'> 📊 Yes - Statistical Significant  </h1>" "The larger the pay gap (negative), the bigger pay inequity between genders", unsafe_allow_html=True)
                 
             main_page.markdown("""---""")
             overview_1, overview_2 = main_page.columns((1, 3))
@@ -274,21 +173,47 @@ with main_page.container():
             main_page.markdown("""---""")
             
             message_budget_pv = np.nan
-            if seek_success_pv == False:
+            if seek_pass_pv == False:
                 message_budget_pv = '0 - current gap is already statistically insignificant'
+            elif (seek_pass_pv == True) and (seek_success_pv == False):
+                message_budget_pv = 'No result is found, please contact consultant for more detail'
             else:
-                message_budget_pv = str(round(seek_budget_pv/1000,0))+'K'
+                message_budget_pv = str(locale.format("%d", round(seek_budget_pv/1000,0), grouping=True))+'K'
                 
-            message_budget_pv = np.nan
-            if seek_success_pv == False:
-                message_budget_pv = '0 - current gap is already statistically insignificant'
+            message_budget_gap = np.nan
+            if seek_pass_gap == False:
+                message_budget_gap = '0 - current gap is greater than zero, no need for further adjustment'
+            elif (seek_pass_gap == True) and (seek_success_gap == False):
+                message_budget_gap = 'No result is found, please contact consultant for more detail'
             else:
-                message_budget_pv = str(round(seek_budget_pv/1000,0))+'K'
+                message_budget_gap = str(locale.format("%d", round(seek_budget_gap/1000,0), grouping=True))+'K'
             
-            name = ['Current','Scenario A','Scenario B']
-            action = ['No change','Reduce net pay gap to statistically insignificant','Completely close net gap to zero']
-            budget = ['0',message_budget_pv,'']
+            scenario = ['Current','A','B']
+            action = ['No change','Reduce gender gap to statistically insignificant','Completely close gender gap']
+            budget = ['0',message_budget_pv,message_budget_gap]
+            net_gap = [female_coff,seek_resulting_gap_pv,seek_resulting_gap_gap]
+            net_gap = [f'{i*100:.1f}%' for i in net_gap]
             
+            # result_pvalue = [female_pvalue,seek_resulting_pvalues_pv,seek_resulting_pvalues_gap]
+            
+            df_reme = pd.DataFrame({'Scenario': scenario, 'Action': action, 'Remediation Budget': budget, 'Net Gender Gap': net_gap})
+
+            cell_hover = {  # for row hover use <tr> instead of <td>
+                            'selector': 'td:hover',
+                            'props': [('background-color', 'lightgrey')]
+                        }
+            index_names = {
+                            'selector': '.index_name',
+                            'props': 'font-style: italic; color: darkgrey; font-weight:normal;'
+                        }
+            headers = {
+                            'selector': 'th:not(.index_name)',
+                            'props': 'background-color: #3498DB; color: white; text-align: center; '
+                        }
+            styler = df_reme.style.hide_index().set_table_styles([cell_hover, index_names, headers], overwrite=False)
+            
+            main_page.markdown("<h1 style='text-align: left; vertical-align: bottom;color: #3498DB; font-size: 150%; opacity: 0.7'>Remediation Scenarios</h1>", unsafe_allow_html=True)
+            main_page.write(styler.to_html(), unsafe_allow_html=True)
             
 #             reme_1, overview_2 = main_page.columns((1, 3))
             
