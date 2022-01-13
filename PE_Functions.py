@@ -530,13 +530,16 @@ def reme_pvalue_seek(df,budget_df,X_full, project_group_feature, protect_group_c
     
     return seek_budget_df,seek_budget,seek_resulting_gap,seek_resulting_pvalues,seek_adj_count, seek_adj_budget_pct,seek_pass,seek_success
 
-def analysis(df, run_demo, demo_path, main_page, main_page_info):
+def analysis(df_submit, run_demo, demo_path, main_page, main_page_info):
+    # Process df (not demo datafile)
+    if run_demo == True:
+        df = pd.read_excel(demo_path,sheet_name="Submission")
+    else:
+        df = pd.read_excel(df_submit,sheet_name="Submission")
+    
     with st.spinner('Running model, Please wait for it...'):
         # Demo Run
         m_info = main_page_info.success('Initialize Data')
-        if run_demo == True:
-            df = pd.read_excel(demo_path,sheet_name="Submission")
-
         # Run discovery model: demo
         m_info = main_page_info.success('Running Gap Analysis')
         df, df_org, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2, female_coff, female_pvalue, before_clean_record, after_clean_record,hc_female,fig_r2_gender_gap,fig_raw_gender_gap,fig_net_gender_gap,X_full,budget_df = run(df)
@@ -554,7 +557,7 @@ def analysis(df, run_demo, demo_path, main_page, main_page_info):
         demo_validation = convert_df(df_org)
                 
         # Display run is successful message    
-        m_info = main_page_info.success('View Demo: '+message.loc[['OVERVIEW']][0])
+        m_info = main_page_info.success('View Result: '+message.loc[['OVERVIEW']][0])
 
         main_page.markdown("""---""")
         m_col1_but_col1, m_col1_but_col2, m_col1_but_col3, m_col1_but_col4 = main_page.columns((2, 2, 2, 1))

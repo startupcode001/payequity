@@ -79,6 +79,8 @@ with main_page.container():
     
     if uploaded_file is not None:
         main_page_info.info('Use input file.')
+        analysis(df_submit = uploaded_file, run_demo = False, demo_path = demo_path, main_page = main_page, main_page_info = main_page_info)
+        
     else:
         m_info = main_page_info.info('Awaiting the upload of the input file.')
         m_col1,m_col2,t1 = main_page.columns((1, 1, 2))
@@ -87,7 +89,7 @@ with main_page.container():
         m_col2_but = m_col2.button('Close demo')
         
         if m_col1_but:
-            analysis(df=None, run_demo = True, demo_path = demo_path, main_page = main_page, main_page_info = main_page_info)
+            analysis(df_submit = None, run_demo = True, demo_path = demo_path, main_page = main_page, main_page_info = main_page_info)
             
         if m_col2_but:
             main_page.empty()
