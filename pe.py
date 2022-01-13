@@ -21,7 +21,7 @@ from pathlib import Path
 # Set Path
 st.set_page_config(layout="wide")
 demo_path = Path(__file__).parents[0].__str__()+'/Data/template.xlsx'
-locale.setlocale(locale.LC_ALL, 'en_US')
+# locale.setlocale(locale.LC_ALL, 'en_US')
 
 # Set Style
 # m = st.markdown("""
