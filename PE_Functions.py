@@ -440,8 +440,8 @@ def get_binary_file_downloader_html(bin_file, file_label='File'):
 
 @st.experimental_memo(show_spinner=False)
 # Run Goal Seek for insignificant gap and 0 gap
-def reme_gap_seek(df,budget_df,X_full, project_group_feature, protect_group_class, seek_goal, current_gap):
-    factor_range = np.arange(2, -2,-0.005)
+def reme_gap_seek(df,budget_df,X_full, project_group_feature, protect_group_class, seek_goal, current_gap, search_step = -0.001):
+    factor_range = np.arange(2, -2,search_step)
     threshold = 0.0005
     
     seek_budget_df = np.nan
@@ -486,9 +486,9 @@ def reme_gap_seek(df,budget_df,X_full, project_group_feature, protect_group_clas
     
 @st.experimental_memo(show_spinner=False)
 # Run Goal Seek for insignificant gap and 0 gap
-def reme_pvalue_seek(df,budget_df,X_full, project_group_feature, protect_group_class, seek_goal, current_pvalue):
+def reme_pvalue_seek(df,budget_df,X_full, project_group_feature, protect_group_class, seek_goal, current_pvalue, search_step= -0.005):
     
-    factor_range = np.arange(2, -2,-0.005)
+    factor_range = np.arange(2, -2,search_step)
     threshold = 0.0005
     
     seek_budget_df = np.nan
@@ -546,11 +546,15 @@ def analysis(df_submit, run_demo, demo_path, main_page, main_page_info):
 
         # Run Reme Pvalue = 7%
         m_info = main_page_info.success('Running Remediation Statistical Significant')
-        seek_budget_df_pv,seek_budget_pv,seek_resulting_gap_pv,seek_resulting_pvalues_pv,seek_adj_count_pv, seek_adj_budget_pct_pv,seek_pass_pv, seek_success_pv = reme_pvalue_seek(df,budget_df,X_full, project_group_feature='GENDER', protect_group_class='F', seek_goal=0.07, current_pvalue = female_coff)
-
+        seek_budget_df_pv,seek_budget_pv,seek_resulting_gap_pv,seek_resulting_pvalues_pv,seek_adj_count_pv, seek_adj_budget_pct_pv,seek_pass_pv, seek_success_pv = reme_pvalue_seek(df,budget_df,X_full, project_group_feature='GENDER', protect_group_class='F', seek_goal=0.07, current_pvalue = female_coff, search_step = -0.005)
+        if seek_success_pv == False:
+            seek_budget_df_pv,seek_budget_pv,seek_resulting_gap_pv,seek_resulting_pvalues_pv,seek_adj_count_pv, seek_adj_budget_pct_pv,seek_pass_pv, seek_success_pv = reme_pvalue_seek(df,budget_df,X_full, project_group_feature='GENDER', protect_group_class='F', seek_goal=0.07, current_pvalue = female_coff, search_step = -0.001)
+            
         # Run Reme Zero Gap
         m_info = main_page_info.success('Running Remediation Zero Gap')
-        seek_budget_df_gap,seek_budget_gap,seek_resulting_gap_gap,seek_resulting_pvalues_gap,seek_adj_count_gap, seek_adj_budget_pct_gap,seek_pass_gap, seek_success_gap = reme_gap_seek(df,budget_df,X_full, project_group_feature='GENDER', protect_group_class='F', seek_goal=0, current_gap = female_coff)
+        seek_budget_df_gap,seek_budget_gap,seek_resulting_gap_gap,seek_resulting_pvalues_gap,seek_adj_count_gap, seek_adj_budget_pct_gap,seek_pass_gap, seek_success_gap = reme_gap_seek(df,budget_df,X_full, project_group_feature='GENDER', protect_group_class='F', seek_goal=0, current_gap = female_coff, search_step = -0.005)
+        if seek_success_gap == False:
+            seek_budget_df_gap,seek_budget_gap,seek_resulting_gap_gap,seek_resulting_pvalues_gap,seek_adj_count_gap, seek_adj_budget_pct_gap,seek_pass_gap, seek_success_gap = reme_gap_seek(df,budget_df,X_full, project_group_feature='GENDER', protect_group_class='F', seek_goal=0, current_gap = female_coff, search_step = -0.001)
 
         # Run data validation
         m_info = main_page_info.success('Output Data Validation')
@@ -623,7 +627,7 @@ def analysis(df_submit, run_demo, demo_path, main_page, main_page_info):
             message_budget_gap = str(locale.format("%d", round(seek_budget_gap/1000,0), grouping=True))+'K'
 
         scenario = ['Current','A','B']
-        action = ['No change','Reduce gender gap to statistically insignificant','Completely close gender gap']
+        action = ['🏁 No change','✔️ Mitigate legal risk \n'+'- Reduced gender gap to statistically insignificant level','✔️ Mitigate legal risk \n'+'✔️✔️ Completely close gender gap \n']
         budget = ['0',message_budget_pv,message_budget_gap]
         net_gap = [female_coff,seek_resulting_gap_pv,seek_resulting_gap_gap]
         net_gap = [f'{i*100:.1f}%' for i in net_gap]
@@ -644,7 +648,8 @@ def analysis(df_submit, run_demo, demo_path, main_page, main_page_info):
                         'selector': 'th:not(.index_name)',
                         'props': 'background-color: #3498DB; color: white; text-align: center; '
                     }
-        styler = df_reme.style.hide_index().set_table_styles([cell_hover, index_names, headers], overwrite=False)
+        styler = df_reme.style.hide_index().set_table_styles([cell_hover, index_names, headers], overwrite=False).set_properties(**{
+    'white-space': 'pre-wrap'})
 
         main_page.markdown("<h1 style='text-align: left; vertical-align: bottom;color: #3498DB; font-size: 150%; opacity: 0.7'>Remediation Scenarios</h1>", unsafe_allow_html=True)
         main_page.write(styler.to_html(), unsafe_allow_html=True)

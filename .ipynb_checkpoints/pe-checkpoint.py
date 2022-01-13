@@ -54,9 +54,15 @@ st.markdown(hide_menu_style, unsafe_allow_html=True)
 # if 'demo_run' not in st.session_state:
 #     st.session_state['demo_run'] = 'no'
 # Side Panel
+
 st.sidebar.header(' 🔔 Start here')
 st.sidebar.markdown(get_binary_file_downloader_html(demo_path, 'Step 1: Download Instruction and Data Template'), unsafe_allow_html=True)
 uploaded_file = st.sidebar.file_uploader('Step 2: Upload Data Template', type=['xlsx'])
+
+submit_butt = False
+if uploaded_file is not None:
+    submit_butt = st.sidebar.button('🚀 Run Analysis')
+
 st.sidebar.write('Step 3: Review result in main panel')
 st.sidebar.markdown("""---""")
 
@@ -77,7 +83,7 @@ main_page = st.container()
 with main_page.container():
     main_page_info = main_page.empty()
     
-    if uploaded_file is not None:
+    if submit_butt == True:
         main_page_info.info('Use input file.')
         analysis(df_submit = uploaded_file, run_demo = False, demo_path = demo_path, main_page = main_page, main_page_info = main_page_info)
         
