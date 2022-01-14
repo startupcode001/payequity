@@ -69,7 +69,7 @@ st.sidebar.markdown("""---""")
 # Main Panel
 c1, c2 = st.columns((2, 1))
 c2.image('Picture/salary.jpeg',use_column_width='auto')
-c1.title('Pay Equity')
+c1.title('PayX')
 c1.write('So what is pay equity? In general, it means compensating employees the same when they perform the same or similar job duties, while accounting for ***pay factors***, such as their job level, job function, experience, performance and tenure with the employer.')
 
 # st.markdown("""---""")
