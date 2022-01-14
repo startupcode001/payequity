@@ -84,15 +84,15 @@ with main_page.container():
     main_page_info = main_page.empty()
     
     if submit_butt == True:
-        main_page_info.info('Use input file.')
+        main_page_info.info('Running input file.')
         analysis(df_submit = uploaded_file, run_demo = False, demo_path = demo_path, main_page = main_page, main_page_info = main_page_info)
         
     else:
-        m_info = main_page_info.info('Awaiting the upload of the input file.')
+        m_info = main_page_info.info('Awaiting the upload of the data template.')
         m_col1,m_col2,t1 = main_page.columns((1, 1, 2))
         
-        m_col1_but = m_col1.button('See demo')
-        m_col2_but = m_col2.button('Close demo')
+        m_col1_but = m_col1.button('See Demo')
+        m_col2_but = m_col2.button('Close Demo')
         
         if m_col1_but:
             analysis(df_submit = None, run_demo = True, demo_path = demo_path, main_page = main_page, main_page_info = main_page_info)

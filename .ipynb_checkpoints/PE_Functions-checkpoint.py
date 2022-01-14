@@ -440,7 +440,7 @@ def get_binary_file_downloader_html(bin_file, file_label='File'):
 
 @st.experimental_memo(show_spinner=False)
 # Run Goal Seek for insignificant gap and 0 gap
-def reme_gap_seek(df,budget_df,X_full, project_group_feature, protect_group_class, seek_goal, current_gap, search_step = -0.001):
+def reme_gap_seek(df,budget_df,X_full, project_group_feature, protect_group_class, seek_goal, current_pvalue, current_gap, search_step = -0.001):
     factor_range = np.arange(2, -2,search_step)
     threshold = 0.0005
     
@@ -486,7 +486,7 @@ def reme_gap_seek(df,budget_df,X_full, project_group_feature, protect_group_clas
     
 @st.experimental_memo(show_spinner=False)
 # Run Goal Seek for insignificant gap and 0 gap
-def reme_pvalue_seek(df,budget_df,X_full, project_group_feature, protect_group_class, seek_goal, current_pvalue, search_step= -0.005):
+def reme_pvalue_seek(df,budget_df,X_full, project_group_feature, protect_group_class, seek_goal, current_pvalue, current_gap, search_step= -0.005):
     
     factor_range = np.arange(2, -2,search_step)
     threshold = 0.0005
@@ -503,6 +503,7 @@ def reme_pvalue_seek(df,budget_df,X_full, project_group_feature, protect_group_c
     if current_pvalue>=0.05:
         print('Current P value already greater than 5%: '+str(current_pvalue))
         seek_pass = False
+        seek_resulting_gap = current_gap
     else:
         seek_pass = True
         for factor in factor_range:
@@ -531,31 +532,37 @@ def reme_pvalue_seek(df,budget_df,X_full, project_group_feature, protect_group_c
     return seek_budget_df,seek_budget,seek_resulting_gap,seek_resulting_pvalues,seek_adj_count, seek_adj_budget_pct,seek_pass,seek_success
 
 def analysis(df_submit, run_demo, demo_path, main_page, main_page_info):
-    # Process df (not demo datafile)
-    if run_demo == True:
-        df = pd.read_excel(demo_path,sheet_name="Submission")
-    else:
-        df = pd.read_excel(df_submit,sheet_name="Submission")
-    
-    with st.spinner('Running model, Please wait for it...'):
-        # Demo Run
-        m_info = main_page_info.success('Initialize Data')
-        # Run discovery model: demo
+    # Process df (not demo datafile)    
+    with st.spinner('Running analysis, Please wait for it...'):
+        m_info = main_page_info.success('Reading Data')
+        if run_demo == True:
+            # Demo Run
+            df = pd.read_excel(demo_path,sheet_name="Submission")
+        else:
+            df = pd.read_excel(df_submit,sheet_name="Submission")
+            
+        # Run discovery model:
         m_info = main_page_info.success('Running Gap Analysis')
         df, df_org, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2, female_coff, female_pvalue, before_clean_record, after_clean_record,hc_female,fig_r2_gender_gap,fig_raw_gender_gap,fig_net_gender_gap,X_full,budget_df = run(df)
-
+        
+        print('pvalue'+str(female_pvalue))
+        
         # Run Reme Pvalue = 7%
-        m_info = main_page_info.success('Running Remediation Statistical Significant')
-        seek_budget_df_pv,seek_budget_pv,seek_resulting_gap_pv,seek_resulting_pvalues_pv,seek_adj_count_pv, seek_adj_budget_pct_pv,seek_pass_pv, seek_success_pv = reme_pvalue_seek(df,budget_df,X_full, project_group_feature='GENDER', protect_group_class='F', seek_goal=0.07, current_pvalue = female_coff, search_step = -0.005)
+        m_info = main_page_info.success('Running Remediation Scenario A: Mitigate Legal Risk')
+        seek_budget_df_pv,seek_budget_pv,seek_resulting_gap_pv,seek_resulting_pvalues_pv,seek_adj_count_pv, seek_adj_budget_pct_pv,seek_pass_pv, seek_success_pv = reme_pvalue_seek(df,budget_df,X_full, project_group_feature='GENDER', protect_group_class='F', seek_goal=0.07, current_gap = female_coff, current_pvalue = female_pvalue, search_step = -0.005)
         if seek_success_pv == False:
-            seek_budget_df_pv,seek_budget_pv,seek_resulting_gap_pv,seek_resulting_pvalues_pv,seek_adj_count_pv, seek_adj_budget_pct_pv,seek_pass_pv, seek_success_pv = reme_pvalue_seek(df,budget_df,X_full, project_group_feature='GENDER', protect_group_class='F', seek_goal=0.07, current_pvalue = female_coff, search_step = -0.001)
-            
+            seek_budget_df_pv,seek_budget_pv,seek_resulting_gap_pv,seek_resulting_pvalues_pv,seek_adj_count_pv, seek_adj_budget_pct_pv,seek_pass_pv, seek_success_pv = reme_pvalue_seek(df,budget_df,X_full, project_group_feature='GENDER', protect_group_class='F', seek_goal=0.07, current_gap = female_coff, current_pvalue = female_pvalue, search_step = -0.001)
+        
+        print('pvalue'+str(seek_resulting_pvalues_pv))
+        
         # Run Reme Zero Gap
-        m_info = main_page_info.success('Running Remediation Zero Gap')
-        seek_budget_df_gap,seek_budget_gap,seek_resulting_gap_gap,seek_resulting_pvalues_gap,seek_adj_count_gap, seek_adj_budget_pct_gap,seek_pass_gap, seek_success_gap = reme_gap_seek(df,budget_df,X_full, project_group_feature='GENDER', protect_group_class='F', seek_goal=0, current_gap = female_coff, search_step = -0.005)
+        m_info = main_page_info.success('Running Remediation Scenario B: Close Gender Gap')
+        seek_budget_df_gap,seek_budget_gap,seek_resulting_gap_gap,seek_resulting_pvalues_gap,seek_adj_count_gap, seek_adj_budget_pct_gap,seek_pass_gap, seek_success_gap = reme_gap_seek(df,budget_df,X_full, project_group_feature='GENDER', protect_group_class='F', seek_goal=0, current_gap = female_coff, current_pvalue = female_pvalue, search_step = -0.005)
         if seek_success_gap == False:
-            seek_budget_df_gap,seek_budget_gap,seek_resulting_gap_gap,seek_resulting_pvalues_gap,seek_adj_count_gap, seek_adj_budget_pct_gap,seek_pass_gap, seek_success_gap = reme_gap_seek(df,budget_df,X_full, project_group_feature='GENDER', protect_group_class='F', seek_goal=0, current_gap = female_coff, search_step = -0.001)
+            seek_budget_df_gap,seek_budget_gap,seek_resulting_gap_gap,seek_resulting_pvalues_gap,seek_adj_count_gap, seek_adj_budget_pct_gap,seek_pass_gap, seek_success_gap = reme_gap_seek(df,budget_df,X_full, project_group_feature='GENDER', protect_group_class='F', seek_goal=0, current_gap = female_coff, current_pvalue = female_pvalue, search_step = -0.001)
 
+        print('pvalue'+str(seek_resulting_pvalues_gap))    
+        
         # Run data validation
         m_info = main_page_info.success('Output Data Validation')
         demo_validation = convert_df(df_org)
@@ -616,15 +623,15 @@ def analysis(df_submit, run_demo, demo_path, main_page, main_page_info):
         elif (seek_pass_pv == True) and (seek_success_pv == False):
             message_budget_pv = 'No result is found, please contact consultant for more detail'
         else:
-            message_budget_pv = str(locale.format("%d", round(seek_budget_pv/1000,0), grouping=True))+'K'
+            message_budget_pv = str(locale.format("%d", round(seek_budget_pv/1000,0), grouping=True))+'K'+'\n'+'('+str(round(seek_adj_budget_pct_pv*100,0))+'% of Pay)'
 
         message_budget_gap = np.nan
         if seek_pass_gap == False:
-            message_budget_gap = '0 - current gap is greater than zero, no need for further adjustment'
+            message_budget_gap = '0 - current gap is already greater than zero, no futher adjustment is needed'
         elif (seek_pass_gap == True) and (seek_success_gap == False):
             message_budget_gap = 'No result is found, please contact consultant for more detail'
         else:
-            message_budget_gap = str(locale.format("%d", round(seek_budget_gap/1000,0), grouping=True))+'K'
+            message_budget_gap = str(locale.format("%d", round(seek_budget_gap/1000,0), grouping=True))+'K'+'\n'+'('+str(round(seek_adj_budget_pct_gap*100,2))+'% of Pay)'
 
         scenario = ['Current','A','B']
         action = ['🏁 No change','✔️ Mitigate legal risk \n'+'- Reduced gender gap to statistically insignificant level','✔️ Mitigate legal risk \n'+'✔️✔️ Completely close gender gap \n']
@@ -634,7 +641,7 @@ def analysis(df_submit, run_demo, demo_path, main_page, main_page_info):
 
         # result_pvalue = [female_pvalue,seek_resulting_pvalues_pv,seek_resulting_pvalues_gap]
 
-        df_reme = pd.DataFrame({'Scenario': scenario, 'Action': action, 'Remediation Budget': budget, 'Net Gender Gap': net_gap})
+        df_reme = pd.DataFrame({'Scenario': scenario, 'What is the action?': action, 'How much does it cost?': budget, 'What is the gap now?': net_gap})
 
         cell_hover = {  # for row hover use <tr> instead of <td>
                         'selector': 'td:hover',
