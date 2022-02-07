@@ -180,7 +180,6 @@ def set_dropped_category(series, dropped_category):
 
 def run(data=None):
     # 1.1 Setup ************************************
-    # Use Starting Salary or not, Y/N
     company_name = 'Client Name'
     version = 'Base Pay'
     starting_salary_flag = 'N'
@@ -275,7 +274,7 @@ def run(data=None):
         df.loc[df[c]=='na', c] = np.nan
         df[c] = pd.to_numeric(df[c])
     
-    df.to_excel('edu.xlsx')
+    # df.to_excel('edu.xlsx')
     
     # %% Convert string columns to categories
     category_columns = [x for x in col_list if x not in numeric_columns]
@@ -368,7 +367,7 @@ def run(data=None):
 #     X_full.to_excel('xfull.xlsx')
 #     df.to_excel('check_final.xlsx')
 #     budget_df.to_excel('check_final_budget.xlsx')
-    r2 = 0.91
+    # r2 = 0.91
     # Graphs
     fig_r2_gender_gap = plot_full_pie(r2,'r2')
     fig_raw_gender_gap = plot_gender_gap(female_coff)
@@ -576,26 +575,31 @@ def analysis(df_submit, run_demo, demo_path, main_page, main_page_info):
         # Display headcount, Successful Run, Female Percent, download validation file
         m_col1_but_col1.metric('💬 Submission Record',before_clean_record)
         m_col1_but_col2.metric('🏆 Successful Run',after_clean_record)
-        m_col1_but_col3.metric('👩 Female %',round(hc_female/after_clean_record,2)*100)
+        m_col1_but_col3.metric('👩 Female Headcount %',round(hc_female/after_clean_record,2)*100)
         m_col1_but_col4.download_button('📥 Download exclusions', data=demo_validation, file_name='Data Validation.csv')
-
+        
+        r2= 0.4
+        
         # Show R2
+        main_page.markdown("""---""")
         metric_R2_1, metric_R2_2, metric_R2_3 = main_page.columns((1, 1.7, 1.7))            
         metric_R2_1.markdown("<h1 style='text-align: left; vertical-align: bottom; font-size: 150%; color: #3498DB; opacity: 0.7'>Robustness</h1>", unsafe_allow_html=True)
         metric_R2_1.pyplot(fig_r2_gender_gap, use_container_width=True)
 
         metric_R2_2.markdown("<h1 style='text-align: left; vertical-align: bottom;color: #3498DB; font-size: 150%; opacity: 0.7'>Benchmark</h1>", unsafe_allow_html=True)
-        metric_R2_2.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 110%; opacity: 0.7'> 🌐 70% ~ 100%  </h1>" "  \n"  "Model Robutness measures how well the pay factors drive pay decisions. For example 80% means pay factors explain 80 percent of the pay variation among employees.", unsafe_allow_html=True)
+        metric_R2_2.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 110%; opacity: 0.7'> 🌐 70% ~ 100%  </h1>" "  \n"  "Model Robutness measures how well the standard model explain pay decisions. For example 80% means the standard model explains 80 percent of the pay variation among employees.", unsafe_allow_html=True)
 
         metric_R2_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: #3498DB; font-size: 150%; opacity: 0.7'>Observation</h1>", unsafe_allow_html=True)
         if r2>=0.7:
-            metric_R2_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 110%; opacity: 0.7'> ✔️ Align with market  </h1>" "  \n"  "The higher robustness, the more accurate the model make pay explination and predictions", unsafe_allow_html=True)
+            metric_R2_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 110%; opacity: 0.7'> ✔️ Align with market  </h1>", unsafe_allow_html=True)
+            metric_R2_3.markdown("The model is **accurate**. Let's see the pay gap results.", unsafe_allow_html=True)
         else:
-            metric_R2_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Orange; font-size: 110%; opacity: 0.7'> ⚠️ Below market  </h1>" "  \n"  "The lower robutness, the lesser accurate the standard model make pay explaination and predictions. In general, we can improve robustness by including additional pay factors not captured by standard model, such as high potential, cost center, skills, etc. Please contact us for a free consultation.", unsafe_allow_html=True)
-
+            metric_R2_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Orange; font-size: 110%; opacity: 0.7'> ⚠️ Below market  </h1>" , unsafe_allow_html=True)
+            metric_R2_3.markdown("Our standard model is **NOT Sufficient** to make pay gap conclusions. We can improve robustness by including additional pay factors, such as high potential, cost center, skills, etc. Please contact us for a free consultation.", unsafe_allow_html=True)
         # metric_R2_3.markdown("<h1 style='text-align: center; vertical-align: bottom; color: Black; background-color: #3498DB; opacity: 0.7; border-style: dotted'>Observation</h1>", unsafe_allow_html=True)
 
         # Show Net Gap
+        main_page.markdown("""---""")
         metric_net_gap_1, metric_net_gap_2, metric_net_gap_3 = main_page.columns((1, 1.6, 1.6))            
         metric_net_gap_1.markdown("<h1 style='text-align: left; vertical-align: bottom; font-size: 150%; color: #3498DB; opacity: 0.7'>Gender Net Gap</h1>", unsafe_allow_html=True)
         metric_net_gap_1.plotly_chart(fig_net_gender_gap, use_container_width=True)
@@ -604,17 +608,42 @@ def analysis(df_submit, run_demo, demo_path, main_page, main_page_info):
         metric_net_gap_2.write("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 110%; opacity: 0.7'> 🌐 > -5% </h1>" "For every 1 dollar paid to male employees, how much (lesser)/more is paid to female employees. For example -3% means on average female employees is paid 3% LOWER than male employees all else equal. Typically the net pay gap in US is between -5% and +1%", unsafe_allow_html=True)
 
         metric_net_gap_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: #3498DB; font-size: 150%; opacity: 0.7'>Observation</h1>", unsafe_allow_html=True)
-        if female_coff>=-0.05:
-            metric_net_gap_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 110%; opacity: 0.7'> ✔️ Align with market  </h1>" "  \n"  "The smaller the pay gap, the better pay equity between genders", unsafe_allow_html=True)
+        
+        female_pvalue = 0.01
+        female_coff = -0.2
+        
+        if female_pvalue>0.05:
+            metric_net_gap_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 110%; opacity: 0.7'> ✔️ Legal Risk - Low </h1>", unsafe_allow_html=True)
+            metric_net_gap_3.markdown("Congratulation! gender gap is **NOT statistically significant**. Your **legal risk is mimiumum** and defensible on sound statistical grounds", unsafe_allow_html=True)
+            if female_coff<-0.05:
+                metric_net_gap_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Orange; font-size: 110%; opacity: 0.7'> ⚠️ Pay Gap - Below market  </h1>", unsafe_allow_html=True)
+                metric_net_gap_3.markdown("Your pay gap is below market, we suggest to periodically rerun to check statistically significance. Alternatively you may consider to **fully close pay gap** at 0%", unsafe_allow_html=True)    
+            elif female_coff>=-0.05 and female_coff<0:
+                metric_net_gap_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 110%; opacity: 0.7'> ✔️ Pay Gap - Align with market  </h1>", unsafe_allow_html=True)
+                metric_net_gap_3.markdown("Your pay gap is align with market. To be the market leader, you may consider to **fully close pay gap** at 0%", unsafe_allow_html=True)
+            else:
+                metric_net_gap_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 110%; opacity: 0.7'> ✔️ Pay Gap - Market leader!  </h1>", unsafe_allow_html=True)
+                metric_net_gap_3.markdown("Congratulation! Your female employees on average **earn more** than male employees. Only 1% companies achieved your great status!", unsafe_allow_html=True)
         else:
-            metric_net_gap_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Orange; font-size: 110%; opacity: 0.7'> ⚠️ Below market  </h1>" "The larger the pay gap (negative), the bigger pay inequity between genders", unsafe_allow_html=True)
-            metric_net_gap_3.markdown("<h1 style='text-align: left; vertical-align: bottom; color: Orange; font-size: 110%; opacity: 0.7'> 📊 Yes - Statistical Significant  </h1>" "The larger the pay gap (negative), the bigger pay inequity between genders", unsafe_allow_html=True)
+            metric_net_gap_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Orange; font-size: 110%; opacity: 0.7'> ⚠️ Legal Risk - High </h1>", unsafe_allow_html=True)
+            metric_net_gap_3.markdown('Gender gap is **statistically significant**, you are vulnerable to gender equality litigation.', unsafe_allow_html=True)
+            metric_net_gap_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Orange; font-size: 110%; opacity: 0.7'> ⚠️ Pay Gap - Below market  </h1>", unsafe_allow_html=True)
+            metric_net_gap_3.markdown("To lower legal risk, you should **reduce pay gap** to statistically insignificant level", unsafe_allow_html=True)
 
         main_page.markdown("""---""")
         overview_1, overview_2 = main_page.columns((1, 3))
         overview_1.image('Picture/overview.jpg',use_column_width='auto')
-        overview_2.write('The lower robutness, the lesser accurate the standard model make pay explaination and predictions. In general, we can improve robustness by including additional pay factors not captured by standard model, such as high potential, cost center, skills, etc. Please contact us for a free consultation',use_column_width='auto')
-
+        if female_pvalue>0.05:
+            overview_2.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Orange; font-size: 110%; opacity: 0.7'>  Congratulation!  </h1>", unsafe_allow_html=True)
+            if female_coff<-0.05:
+                overview_2.markdown('Your pay gap is at <font color=Green> **low** </font> legal risk. However, your pay gap is <font color=Green> **larger** </font> than market. Larger negative pay gap usually leads to statistically significant status which increase legal risk. As a preventive action, you may **periodically rerun** this analysis to monitor pay gap. Alternative, you may consider to **full close** pay gap - See Scenario B below', unsafe_allow_html=True)
+            elif female_coff>=-0.05 and female_coff<0:
+                overview_2.markdown('Congratulation! Your pay gap is at <font color=Green> **low** </font> legal risk. You are also **aligned** with market! We recommend to **monitor pay gap periodically** - for instance before and after merit increase, M&A, organization restructure, and major job releveling. Also you may consider to **full close** pay gap - See Scenario B below', unsafe_allow_html=True)
+            else:
+                overview_2.markdown('Congratulation! Your pay gap is at <font color=Green> **low** </font> legal risk. You are the <font color=Green> **market leader** </font> in gender pay equaity (only 1% of companies achieve female employee pays more than male employee all else equal. We recommend to **monitor pay gap periodically** - for instance before and after merit increase, M&A, organization restructure, and major job releveling.', unsafe_allow_html=True)
+        else:
+            overview_2.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Orange; font-size: 110%; opacity: 0.7'>  Action Needed!  </h1>", unsafe_allow_html=True)
+            overview_2.markdown('Your pay gap is at <font color=Orange> **high** </font> legal risk. You should consider to **reduce pay gap** to statistically insignificant level - See **Secnario A** below. Alternatively you may also consider to **full close** pay gap at a higher cost - See **Scenario B** below', unsafe_allow_html=True)
         main_page.markdown("""---""")
 
         message_budget_pv = np.nan
@@ -634,7 +663,7 @@ def analysis(df_submit, run_demo, demo_path, main_page, main_page_info):
             message_budget_gap = str(locale.format("%d", round(seek_budget_gap/1000,0), grouping=True))+'K'+'\n'+'('+str(round(seek_adj_budget_pct_gap*100,2))+'% of Pay)'
 
         scenario = ['Current','A','B']
-        action = ['🏁 No change','✔️ Mitigate legal risk \n'+'- Reduced gender gap to statistically insignificant level','✔️ Mitigate legal risk \n'+'✔️✔️ Completely close gender gap \n']
+        action = ['🏁 No change','✔️ Mitigate legal risk \n'+'- Reduce gender pay gap to statistically insignificant level','✔️ Mitigate legal risk \n'+'✔️✔️ Completely close gender pay gap \n']
         budget = ['0',message_budget_pv,message_budget_gap]
         net_gap = [female_coff,seek_resulting_gap_pv,seek_resulting_gap_gap]
         net_gap = [f'{i*100:.1f}%' for i in net_gap]
