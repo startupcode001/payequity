@@ -55,7 +55,7 @@ st.markdown(hide_menu_style, unsafe_allow_html=True)
 #     st.session_state['demo_run'] = 'no'
 # Side Panel
 
-st.sidebar.header(' 🔔 Start here')
+st.sidebar.header(' 🎯 Start here')
 st.sidebar.markdown(get_binary_file_downloader_html(demo_path, 'Step 1: Download Instruction and Data Template'), unsafe_allow_html=True)
 uploaded_file = st.sidebar.file_uploader('Step 2: Upload Data Template', type=['xlsx'])
 
@@ -74,7 +74,7 @@ c1.write('So what is pay equity? In general, it means compensating employees the
 
 # st.markdown("""---""")
 
-with st.expander("🎯 See Instruction"):
+with st.expander("🔔 See Instruction"):
     st.write("""To start your analysis, please upload data in sidebar. Check out "See Demo" for a sample output.""")
     # e1, e2 = st.columns((1,4))
     # e1.image('Picture/guide2.jpeg',use_column_width='auto')
