@@ -243,7 +243,12 @@ def run(data=None):
     
     df = df_org[df_org['VALIDATION_MESSAGE']==""]
     after_clean_record=df.shape[0]
-
+    
+    df_validation = df_org[df_org['VALIDATION_MESSAGE']!=""]
+    list_validation = [x for x in df_validation.columns.tolist() if x not in ['VALIDATION_MESSAGE','VALIDATION_FLAG','NOW']]
+    list_validation = ['VALIDATION_MESSAGE']+list_validation
+    df_validation = df_validation[list_validation]
+    
     warning_message['OVERVIEW'] = "OVERVIEW:Successfully run "+str(after_clean_record)+" out of "+str(before_clean_record)+" records"
     message = pd.DataFrame.from_dict(warning_message,orient='index')
     message.columns=['NAME']
@@ -389,7 +394,7 @@ def run(data=None):
     
     # print(message.loc[['OVERVIEW']]['Message'])
     
-    return df, df_org, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2, female_coff, female_pvalue, before_clean_record, after_clean_record,hc_female,fig_r2_gender_gap,fig_raw_gender_gap,fig_net_gender_gap,X_full,budget_df,exclude_feature, include_feature
+    return df, df_org, df_validation, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2, female_coff, female_pvalue, before_clean_record, after_clean_record,hc_female,fig_r2_gender_gap,fig_raw_gender_gap,fig_net_gender_gap,X_full,budget_df,exclude_feature, include_feature
 
 
 def reme(df,budget_df,X_full,factor, project_group_feature, protect_group_class):
@@ -554,7 +559,7 @@ def analysis(df_submit, run_demo, demo_path, main_page, main_page_info):
             
         # Run discovery model:
         m_info = main_page_info.success('Running Gap Analysis')
-        df, df_org, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2, female_coff, female_pvalue, before_clean_record, after_clean_record,hc_female,fig_r2_gender_gap,fig_raw_gender_gap,fig_net_gender_gap,X_full,budget_df,exclude_feature, include_feature = run(df)        
+        df, df_org,  df_validation, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2, female_coff, female_pvalue, before_clean_record, after_clean_record,hc_female,fig_r2_gender_gap,fig_raw_gender_gap,fig_net_gender_gap,X_full,budget_df,exclude_feature, include_feature = run(df)        
         print('pvalue'+str(female_pvalue))
         
         # Run Reme Pvalue = 7%
@@ -580,23 +585,24 @@ def analysis(df_submit, run_demo, demo_path, main_page, main_page_info):
         
         # Run data validation
         m_info = main_page_info.success('Output Data Validation')
-        demo_validation = convert_df(df_org)
+        demo_validation = convert_df(df_validation)
         
         output = BytesIO()
-        # Write files to in-memory strings using BytesIO
-        # See: https://xlsxwriter.readthedocs.io/workbook.html?highlight=BytesIO#constructor
-        workbook = xlsxwriter.Workbook(output, {'in_memory': True})
-        worksheet = workbook.add_worksheet()
+        writer = pd.ExcelWriter(output, engine='xlsxwriter')
+        df_validation.to_excel(writer, index=False, sheet_name='Sheet1')
+        workbook = writer.book
+        worksheet = writer.sheets['Sheet1']
+        
+        for column in df_validation:
+            column_width = max(df_validation[column].astype(str).map(len).max(), len(column))+3
+            col_idx = df_validation.columns.get_loc(column)
+            writer.sheets['Sheet1'].set_column(col_idx, col_idx, column_width)
+        writer.save()
+        processed_data = output.getvalue()
 
-        worksheet.write('A1', 'Hello')
-        workbook.close()
-
-        st.download_button(
-            label="Download Excel workbook",
-            data=output.getvalue(),
-            file_name="workbook.xlsx",
-            mime="application/vnd.ms-excel"
-        )
+        # st.download_button(label='📥 Download Current Result',
+        #                         data=processed_data,
+        #                         file_name= 'Data Validation.xlsx')
                 
         # Display run is successful message    
         m_info = main_page_info.success('View Result: '+message.loc[['OVERVIEW']][0])
@@ -608,7 +614,8 @@ def analysis(df_submit, run_demo, demo_path, main_page, main_page_info):
         m_col1_but_col1.metric('💬 Submission Record',before_clean_record)
         m_col1_but_col2.metric('🏆 Successful Run',after_clean_record)
         m_col1_but_col3.metric('👩 Female Headcount %',round(hc_female/after_clean_record,2)*100)
-        m_col1_but_col4.download_button('📥 Download exclusions', data=demo_validation, file_name='Data Validation.csv',mime='text/csv')
+        # m_col1_but_col4.download_button('📥 Download exclusions', data=demo_validation, file_name='Data Validation.csv',mime='text/csv')
+        m_col1_but_col4.download_button(label='📥 Download exclusions',data=processed_data,file_name= 'Data Validation.xlsx')
         
         main_page.markdown("""---""")
         
