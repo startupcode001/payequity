@@ -3,6 +3,7 @@ plotly==4.14.3
 base58==2.0.1
 pandas
 openpyxl
+xlsxwriter
 tabulate
 numpy
 patsy

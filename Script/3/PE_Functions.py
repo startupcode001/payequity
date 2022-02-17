@@ -20,9 +20,6 @@ from math import pi
 import base64
 import os
 
-import xlsxwriter
-from io import BytesIO
-
 import locale
 
 # Helper Functions Starts here #
@@ -259,12 +256,6 @@ def run(data=None):
     df = df[filter_list]
     col_list=df.columns.tolist()
     
-    print(exclude_col)
-    print(filter_list)
-    extra = ['VALIDATION_MESSAGE', 'VALIDATION_FLAG', 'NOW']
-    exclude_feature = exclude_col    
-    include_feature = [x for x in filter_list if x not in extra]
-    
     # Calculate Age and Tenure
     try:
         df['AGE'] = np.ceil((df['NOW'] - df['DATE_OF_BIRTH']).dt.days/365)
@@ -389,7 +380,7 @@ def run(data=None):
     
     # print(message.loc[['OVERVIEW']]['Message'])
     
-    return df, df_org, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2, female_coff, female_pvalue, before_clean_record, after_clean_record,hc_female,fig_r2_gender_gap,fig_raw_gender_gap,fig_net_gender_gap,X_full,budget_df,exclude_feature, include_feature
+    return df, df_org, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2, female_coff, female_pvalue, before_clean_record, after_clean_record,hc_female,fig_r2_gender_gap,fig_raw_gender_gap,fig_net_gender_gap,X_full,budget_df
 
 
 def reme(df,budget_df,X_full,factor, project_group_feature, protect_group_class):
@@ -554,7 +545,8 @@ def analysis(df_submit, run_demo, demo_path, main_page, main_page_info):
             
         # Run discovery model:
         m_info = main_page_info.success('Running Gap Analysis')
-        df, df_org, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2, female_coff, female_pvalue, before_clean_record, after_clean_record,hc_female,fig_r2_gender_gap,fig_raw_gender_gap,fig_net_gender_gap,X_full,budget_df,exclude_feature, include_feature = run(df)        
+        df, df_org, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2, female_coff, female_pvalue, before_clean_record, after_clean_record,hc_female,fig_r2_gender_gap,fig_raw_gender_gap,fig_net_gender_gap,X_full,budget_df = run(df)
+        
         print('pvalue'+str(female_pvalue))
         
         # Run Reme Pvalue = 7%
@@ -573,30 +565,9 @@ def analysis(df_submit, run_demo, demo_path, main_page, main_page_info):
 
         print('pvalue'+str(seek_resulting_pvalues_gap))    
         
-        # Show exclude and include features
-        include_feature_text =  ', '.join(include_feature)
-        exclude_feature_text =  ', '.join(exclude_feature)
-        # st.sidebar.options = st.sidebar.markdown('Pay factors included in model:' + include_feature_text)
-        
         # Run data validation
         m_info = main_page_info.success('Output Data Validation')
         demo_validation = convert_df(df_org)
-        
-        output = BytesIO()
-        # Write files to in-memory strings using BytesIO
-        # See: https://xlsxwriter.readthedocs.io/workbook.html?highlight=BytesIO#constructor
-        workbook = xlsxwriter.Workbook(output, {'in_memory': True})
-        worksheet = workbook.add_worksheet()
-
-        worksheet.write('A1', 'Hello')
-        workbook.close()
-
-        st.download_button(
-            label="Download Excel workbook",
-            data=output.getvalue(),
-            file_name="workbook.xlsx",
-            mime="application/vnd.ms-excel"
-        )
                 
         # Display run is successful message    
         m_info = main_page_info.success('View Result: '+message.loc[['OVERVIEW']][0])
@@ -609,15 +580,6 @@ def analysis(df_submit, run_demo, demo_path, main_page, main_page_info):
         m_col1_but_col2.metric('🏆 Successful Run',after_clean_record)
         m_col1_but_col3.metric('👩 Female Headcount %',round(hc_female/after_clean_record,2)*100)
         m_col1_but_col4.download_button('📥 Download exclusions', data=demo_validation, file_name='Data Validation.csv',mime='text/csv')
-        
-        main_page.markdown("""---""")
-        
-        inc_col, exc_col = main_page.columns((1, 1))
-        inc_col.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 110%; opacity: 0.7'> ✔️ Pay factors included in analysis:  </h1>", unsafe_allow_html=True)        
-        inc_col.markdown(include_feature_text, unsafe_allow_html=True)
-        
-        exc_col.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Orange; font-size: 110%; opacity: 0.7'> ⚠️ Pay factors excluded from analysis:  </h1>", unsafe_allow_html=True)        
-        exc_col.markdown(exclude_feature_text, unsafe_allow_html=True)
         
         # r2= 0.9
         

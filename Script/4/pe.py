@@ -18,9 +18,6 @@ import locale
 from PE_Functions import *
 from pathlib import Path
 
-import xlsxwriter
-from io import BytesIO
-
 # Set Path
 st.set_page_config(layout="wide")
 demo_path = Path(__file__).parents[0].__str__()+'/Data/template.xlsx'

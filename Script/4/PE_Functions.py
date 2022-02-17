@@ -20,9 +20,6 @@ from math import pi
 import base64
 import os
 
-import xlsxwriter
-from io import BytesIO
-
 import locale
 
 # Helper Functions Starts here #
@@ -581,22 +578,6 @@ def analysis(df_submit, run_demo, demo_path, main_page, main_page_info):
         # Run data validation
         m_info = main_page_info.success('Output Data Validation')
         demo_validation = convert_df(df_org)
-        
-        output = BytesIO()
-        # Write files to in-memory strings using BytesIO
-        # See: https://xlsxwriter.readthedocs.io/workbook.html?highlight=BytesIO#constructor
-        workbook = xlsxwriter.Workbook(output, {'in_memory': True})
-        worksheet = workbook.add_worksheet()
-
-        worksheet.write('A1', 'Hello')
-        workbook.close()
-
-        st.download_button(
-            label="Download Excel workbook",
-            data=output.getvalue(),
-            file_name="workbook.xlsx",
-            mime="application/vnd.ms-excel"
-        )
                 
         # Display run is successful message    
         m_info = main_page_info.success('View Result: '+message.loc[['OVERVIEW']][0])
