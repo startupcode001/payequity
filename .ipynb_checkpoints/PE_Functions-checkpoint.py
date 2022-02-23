@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+from datetime import date
+import operator
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -67,26 +69,33 @@ def plot_gender_gap(coff):
                      
     return fig
 
-def plot_full_pie(ratio,plot_type):
-    if plot_type=='r2' and ratio >= 0.7:
-        # color = '#5DADE2'
-        color = 'Green'
-    else:
-        color = 'Silver'
+def plot_r2(r2_input):
+    r2 = r2_input
+    bar_before = {'color': "grey"}
+    # bar_after = {'color': "lightgreen"}
+    bar_after = {'color': "Green"}
+    bar_now = bar_before
+    if r2>=0.7:
+        bar_now = bar_after
     
-    fig, ax = plt.subplots(figsize=(6, 6), subplot_kw={'projection':'polar'})
-    data = round(ratio*100)
-    data_label = str(data).strip(".0")+'%'
-    startangle = 90
-    x = (data * pi *2)/ 100
-    left = (startangle * pi *2)/ 360 #this is to control where the bar starts
-    print(left)
-    plt.xticks([])
-    plt.yticks([])
-    ax.spines.clear()
-    ax.barh(1, x, left=left, height=1.5, color=color) 
-    plt.ylim(-3, 3)
-    plt.text(0, -3, data_label, ha='center', va='center', fontsize=25)
+    fig = go.Figure(go.Indicator(
+        domain = {'x': [0, 1], 'y': [0, 1]},
+        value = round(r2*100,1),
+        mode = "gauge+number",
+        number = {'suffix': "%"},
+        number_font_size = 25,
+        # number_font_color = '#5DADE2',
+        title = {'text': ""},
+        gauge = {'bar':bar_now,
+                 'axis': {'range': [0,100], 'ticksuffix':"%", 'tickmode':'linear','tick0':-20,'dtick':20 },
+                 'steps' : [
+                     {'range': [0, 70], 'color': "white"},
+                     {'range': [70, 100], 'color': "lightgreen"}
+                 ],
+                 'threshold' : {'line': {'color': "green", 'width': 1}, 'thickness': 0.5, 'value': 70}
+                }))
+    fig.update_layout(autosize=False, margin=dict(l=22,r=22,b=0,t=0,pad=1), width = 300, height = 200)
+                     
     return fig
 
 def plot_half_pie(ratio,ratio_max, plot_type):
@@ -209,12 +218,15 @@ def run(data=None):
     df['VALIDATION_MESSAGE']=""
     df['VALIDATION_FLAG']=0
     # Snapshot Date
+    snapshot = np.nan
     try:
         df['SNAPSHOT_DATE'] = df['SNAPSHOT_DATE'].astype("string")
         snapshot = df['SNAPSHOT_DATE'].mode().tolist()[0]
     except:
         error_snapshot = "Invalid snapshot date, Please check submission format is mm/dd/yyyy in data template"
         error_message['SNAPSHOT_DATE'] = error_snapshot
+    if snapshot == np.nan:
+        snapshot = date.today()
     df['NOW'] = pd.to_datetime(snapshot)
         
     # 2.2 Clean up All features ******************
@@ -385,7 +397,8 @@ def run(data=None):
 #     budget_df.to_excel('check_final_budget.xlsx')
     # r2 = 0.91
     # Graphs
-    fig_r2_gender_gap = plot_full_pie(r2,'r2')
+    # fig_r2_gender_gap = plot_full_pie(r2,'r2')
+    fig_r2_gender_gap = plot_r2(r2)
     fig_raw_gender_gap = plot_gender_gap(female_coff)
     fig_net_gender_gap = plot_gender_gap(female_coff)
     
@@ -459,7 +472,8 @@ def reme_gap_seek(df,budget_df,X_full, project_group_feature, protect_group_clas
     factor_range = np.arange(2, -2,search_step)
     threshold = 0.0005
     
-    seek_budget_df = np.nan
+    # seek_budget_df = np.nan
+    seek_budget_df = pd.DataFrame()
     seek_budget = np.nan
     seek_resulting_gap  = np.nan
     seek_resulting_pvalues =  np.nan
@@ -492,6 +506,12 @@ def reme_gap_seek(df,budget_df,X_full, project_group_feature, protect_group_clas
                 print('Final p_value is '+str(seek_resulting_pvalues))
                 print('Final Budget is '+str(seek_budget))
                 print('Final Budget % '+str(seek_adj_budget_pct))
+                
+                keep_list = ['EEID','S_Budget','S_Adjusted']
+                seek_budget_df = seek_budget_df[keep_list]
+                seek_budget_df.columns=['EEID','SCENARIO_B_ADJUSTMENT','SCENARIO_B_ADJUSTED_SALARY']
+                # seek_budget_df = seek_budget_df.merge(df,on='EEID',how='inner')
+                seek_budget_df.to_excel('budget_gap.xlsx')
                 break
 
         if seek_budget == np.nan:
@@ -507,7 +527,8 @@ def reme_pvalue_seek(df,budget_df,X_full, project_group_feature, protect_group_c
     factor_range = np.arange(2, -2,search_step)
     threshold = 0.0005
     
-    seek_budget_df = np.nan
+    # seek_budget_df = np.nan
+    seek_budget_df = pd.DataFrame()
     seek_budget = np.nan
     seek_resulting_gap  = np.nan
     seek_resulting_pvalues =  np.nan
@@ -539,6 +560,12 @@ def reme_pvalue_seek(df,budget_df,X_full, project_group_feature, protect_group_c
                 print('Final p_value is '+str(seek_resulting_pvalues))
                 print('Final Budget is '+str(seek_budget))
                 print('Final Budget % '+str(seek_adj_budget_pct))
+
+                keep_list = ['EEID','S_Budget','S_Adjusted']
+                seek_budget_df = seek_budget_df[keep_list]
+                seek_budget_df.columns=['EEID','SCENARIO_A_ADJUSTMENT','SCENARIO_A_ADJUSTED_SALARY']
+                # seek_budget_df = seek_budget_df.merge(df,on='EEID',how='inner')
+                seek_budget_df.to_excel('budget_pv.xlsx')                
                 break
 
         if seek_budget == np.nan:
@@ -567,16 +594,26 @@ def analysis(df_submit, run_demo, demo_path, main_page, main_page_info):
         seek_budget_df_pv,seek_budget_pv,seek_resulting_gap_pv,seek_resulting_pvalues_pv,seek_adj_count_pv, seek_adj_budget_pct_pv,seek_pass_pv, seek_success_pv = reme_pvalue_seek(df,budget_df,X_full, project_group_feature='GENDER', protect_group_class='F', seek_goal=0.07, current_gap = female_coff, current_pvalue = female_pvalue, search_step = -0.005)
         if seek_success_pv == False:
             seek_budget_df_pv,seek_budget_pv,seek_resulting_gap_pv,seek_resulting_pvalues_pv,seek_adj_count_pv, seek_adj_budget_pct_pv,seek_pass_pv, seek_success_pv = reme_pvalue_seek(df,budget_df,X_full, project_group_feature='GENDER', protect_group_class='F', seek_goal=0.07, current_gap = female_coff, current_pvalue = female_pvalue, search_step = -0.001)
-        
         print('pvalue'+str(seek_resulting_pvalues_pv))
+        seek_budget_df_pv.to_excel('df_pv.xlsx')
         
         # Run Reme Zero Gap
         m_info = main_page_info.success('Running Remediation Scenario B: Close Gender Gap')
         seek_budget_df_gap,seek_budget_gap,seek_resulting_gap_gap,seek_resulting_pvalues_gap,seek_adj_count_gap, seek_adj_budget_pct_gap,seek_pass_gap, seek_success_gap = reme_gap_seek(df,budget_df,X_full, project_group_feature='GENDER', protect_group_class='F', seek_goal=0, current_gap = female_coff, current_pvalue = female_pvalue, search_step = -0.005)
         if seek_success_gap == False:
             seek_budget_df_gap,seek_budget_gap,seek_resulting_gap_gap,seek_resulting_pvalues_gap,seek_adj_count_gap, seek_adj_budget_pct_gap,seek_pass_gap, seek_success_gap = reme_gap_seek(df,budget_df,X_full, project_group_feature='GENDER', protect_group_class='F', seek_goal=0, current_gap = female_coff, current_pvalue = female_pvalue, search_step = -0.001)
-
-        print('pvalue'+str(seek_resulting_pvalues_gap))    
+        print('pvalue'+str(seek_resulting_pvalues_gap))  
+        seek_budget_df_gap.to_excel('df_gap.xlsx')
+        
+        # Create download file for remediation
+        reme_download_flag = 0
+        if operator.not_(seek_budget_df_pv.empty):
+            df_reme_ind = seek_budget_df_pv.merge(seek_budget_df_gap,on='EEID',how='inner')
+            reme_download_flag = 1
+        elif (seek_budget_df_pv.empty) and (operator.not_(seek_budget_df_gap.empty)):
+            df_reme_ind = seek_budget_df_gap
+            reme_download_flag = 1
+        # df_reme_ind.to_excel('df_reme_ind.xlsx')
         
         # Show exclude and include features
         include_feature_text =  ', '.join(include_feature)
@@ -617,22 +654,27 @@ def analysis(df_submit, run_demo, demo_path, main_page, main_page_info):
         main_page.markdown("""---""")
         overview_1, overview_2 = main_page.columns((0.01, 10))
         # overview_1.image('Picture/overview.jpg',use_column_width='auto')
-        if female_pvalue>0.05:
-            overview_2.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 150%; opacity: 0.7'>  Congratulation!  </h1>", unsafe_allow_html=True)
-            if female_coff<-0.05:
-                overview_2.markdown('Your pay gap is at <font color=Green> **low** </font> legal risk. However, your pay gap is <font color=Green> **larger** </font> than market. Larger negative pay gap usually leads to statistically significant status which increase legal risk. As a preventive action, you may **periodically rerun** this analysis to monitor pay gap. Alternative, you may consider to **full close** pay gap - See Scenario B below', unsafe_allow_html=True)
-            elif female_coff>=-0.05 and female_coff<0:
-                overview_2.markdown('Your pay gap is at <font color=Green> **low** </font> legal risk. You are also **aligned** with market! We recommend to **monitor pay gap periodically** - for instance before and after merit increase, M&A, organization restructure, and major job releveling. Also you may consider to **full close** pay gap - See Scenario B below', unsafe_allow_html=True)
-            else:
-                overview_2.markdown('Your pay gap is at <font color=Green> **low** </font> legal risk. You are the <font color=Green> **market leader** </font> in gender pay equaity (only 1% of companies achieve female employee pays more than male employee all else equal. We recommend to **monitor pay gap periodically** - for instance before and after merit increase, M&A, organization restructure, and major job releveling.', unsafe_allow_html=True)
-        else:
-            if female_coff>0:
+        if r2>0.7:
+            if female_pvalue>0.05:
                 overview_2.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 150%; opacity: 0.7'>  Congratulation!  </h1>", unsafe_allow_html=True)
-                overview_2.markdown('Your pay gap is at <font color=Green> **low** </font> legal risk. You are the <font color=Green> **market leader** </font> in gender pay equaity (only 1% of companies achieve female employee pays more than male employee all else equal. We recommend to **monitor pay gap periodically** - for instance before and after merit increase, M&A, organization restructure, and major job releveling.', unsafe_allow_html=True)
+                if female_coff<-0.05:
+                    overview_2.markdown('Your pay gap is at <font color=Green> **low** </font> legal risk. However, your pay gap is <font color=Green> **larger** </font> than market. Larger negative pay gap usually leads to statistically significant status which increase legal risk. As a preventive action, you may **periodically rerun** this analysis to monitor pay gap. Alternative, you may consider to **full close** pay gap - See Scenario B below', unsafe_allow_html=True)
+                elif female_coff>=-0.05 and female_coff<0:
+                    overview_2.markdown('Your pay gap is at <font color=Green> **low** </font> legal risk. You are also **aligned** with market! We recommend to **monitor pay gap periodically** - for instance before and after merit increase, M&A, organization restructure, and major job releveling. Also you may consider to **full close** pay gap - See Scenario B below', unsafe_allow_html=True)
+                else:
+                    overview_2.markdown('Your pay gap is at <font color=Green> **low** </font> legal risk. You are the <font color=Green> **market leader** </font> in gender pay equaity (only 1% of companies achieve female employee pays more than male employee all else equal. We recommend to **monitor pay gap periodically** - for instance before and after merit increase, M&A, organization restructure, and major job releveling.', unsafe_allow_html=True)
             else:
-                overview_2.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Orange; font-size: 150%; opacity: 0.7'>  Action Needed!  </h1>", unsafe_allow_html=True)
-                overview_2.markdown('Your pay gap is at <font color=Orange> **high** </font> legal risk. You should consider to **reduce pay gap** to statistically insignificant level - See **Secnario A** below. Alternatively you may also consider to **full close** pay gap at a higher cost - See **Scenario B** below', unsafe_allow_html=True)
-        
+                if female_coff>0:
+                    overview_2.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 150%; opacity: 0.7'>  Congratulation!  </h1>", unsafe_allow_html=True)
+                    overview_2.markdown('Your pay gap is at <font color=Green> **low** </font> legal risk. You are the <font color=Green> **market leader** </font> in gender pay equaity (only 1% of companies achieve female employee pays more than male employee all else equal. We recommend to **monitor pay gap periodically** - for instance before and after merit increase, M&A, organization restructure, and major job releveling.', unsafe_allow_html=True)
+                else:
+                    overview_2.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Orange; font-size: 150%; opacity: 0.7'>  Action Needed!  </h1>", unsafe_allow_html=True)
+                    overview_2.markdown('Your pay gap is at <font color=Orange> **high** </font> legal risk. You should consider to **reduce pay gap** to statistically insignificant level - See **Secnario A** below. Alternatively you may also consider to **full close** pay gap at a higher cost - See **Scenario B** below', unsafe_allow_html=True)
+        else:
+            overview_2.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Orange; font-size: 150%; opacity: 0.7'> Contact Us </h1>", unsafe_allow_html=True)
+            overview_2.markdown('Our standard pay factors are <font color=Orange> **NOT Sufficient** </font> to make pay gap conclusions. We can built an customized model to include additional pay factors, such as high potential, cost center, skills, etc. Please contact us for a free consultation.', unsafe_allow_html=True)
+            main_page.markdown("""---""")
+            st.stop()
         main_page.markdown("""---""")
         m_col1_but_col1, m_col1_but_col2, m_col1_but_col3, m_col1_but_col4 = main_page.columns((2, 2, 2, 1))
 
@@ -658,8 +700,8 @@ def analysis(df_submit, run_demo, demo_path, main_page, main_page_info):
         main_page.markdown("""---""")
         metric_R2_1, metric_R2_2, metric_R2_3 = main_page.columns((1, 1.7, 1.7))            
         metric_R2_1.markdown("<h1 style='text-align: left; vertical-align: bottom; font-size: 150%; color: #3498DB; opacity: 0.7'>Robustness</h1>", unsafe_allow_html=True)
-        metric_R2_1.pyplot(fig_r2_gender_gap, use_container_width=True)
-
+        metric_R2_1.plotly_chart(fig_r2_gender_gap, use_container_width=True)
+        
         metric_R2_2.markdown("<h1 style='text-align: left; vertical-align: bottom;color: #3498DB; font-size: 150%; opacity: 0.7'>Benchmark</h1>", unsafe_allow_html=True)
         metric_R2_2.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 110%; opacity: 0.7'> 🌐 70% ~ 100%  </h1>" "  \n"  "Model Robutness measures how well the standard model explain pay decisions. For example 80% means the standard model explains 80 percent of the pay variation among employees.", unsafe_allow_html=True)
 
@@ -711,9 +753,10 @@ def analysis(df_submit, run_demo, demo_path, main_page, main_page_info):
                 metric_net_gap_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Orange; font-size: 110%; opacity: 0.7'> ⚠️ Pay Gap - Below market  </h1>", unsafe_allow_html=True)
                 metric_net_gap_3.markdown("To lower legal risk, you should **reduce pay gap** to statistically insignificant level", unsafe_allow_html=True)
 
-        
+        # Remediation Scenarios
         main_page.markdown("""---""")
-
+        # reme_col1, reme_col2 = main_page.columns((1, 1))
+        
         message_budget_pv = np.nan
         if seek_pass_pv == False:
             message_budget_pv = '0 - current gap is already statistically insignificant'
@@ -731,7 +774,7 @@ def analysis(df_submit, run_demo, demo_path, main_page, main_page_info):
             message_budget_gap = str(locale.format("%d", round(seek_budget_gap/1000,0), grouping=True))+'K'+'\n'+'('+str(round(seek_adj_budget_pct_gap*100,2))+'% of Pay)'
 
         scenario = ['Current','A','B']
-        action = ['🏁 No change','✔️ Mitigate legal risk \n'+'- Reduce gender pay gap to statistically insignificant level','✔️ Mitigate legal risk \n'+'✔️✔️ Completely close gender pay gap \n']
+        action = ['🏁 No change','✔️ Mitigate legal risk \n'+'✔️✔️ Reduce gender gap to statistically insignificant level','✔️ Mitigate legal risk \n'+'✔️✔️ Completely close gender gap \n'+'✔️✔️✔️ Become market leader (Top 1%)\n']
         budget = ['0',message_budget_pv,message_budget_gap]
         net_gap = [female_coff,seek_resulting_gap_pv,seek_resulting_gap_gap]
         net_gap = [f'{i*100:.1f}%' for i in net_gap]
@@ -756,4 +799,28 @@ def analysis(df_submit, run_demo, demo_path, main_page, main_page_info):
     'white-space': 'pre-wrap'})
 
         main_page.markdown("<h1 style='text-align: left; vertical-align: bottom;color: #3498DB; font-size: 150%; opacity: 0.7'>Remediation Scenarios</h1>", unsafe_allow_html=True)
+        
+        # Download individual employee recommendation
+        if reme_download_flag == 1:
+            output_reme = BytesIO()
+            writer_reme = pd.ExcelWriter(output_reme, engine='xlsxwriter')
+            df_reme_ind.to_excel(writer_reme, index=False, sheet_name='Sheet1')
+            workbook_reme = writer_reme.book
+            worksheet_reme = writer_reme.sheets['Sheet1']
+
+            for column in df_reme_ind:
+                column_width = max(df_reme_ind[column].astype(str).map(len).max(), len(column))+3
+                col_idx = df_reme_ind.columns.get_loc(column)
+                writer_reme.sheets['Sheet1'].set_column(col_idx, col_idx, column_width)
+            cell_format = workbook_reme.add_format()
+
+            cell_format.set_pattern(1)  # This is optional when using a solid fill.
+            cell_format.set_bg_color('yellow')
+            worksheet_reme.write('A1', 'EEID',cell_format)
+
+            writer_reme.save()
+            processed_reme = output_reme.getvalue()
+            
+            main_page.download_button(label='💰 Download Salary Adjustment',data = processed_reme,file_name= 'Salary Adjustment.xlsx')
+        
         main_page.write(styler.to_html(), unsafe_allow_html=True)
