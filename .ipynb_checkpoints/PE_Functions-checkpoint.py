@@ -646,10 +646,6 @@ def analysis(df_submit, run_demo, demo_path, main_page, main_page_info):
         
         writer.save()
         processed_data = output.getvalue()
-
-        # st.download_button(label='📥 Download Current Result',
-        #                         data=processed_data,
-        #                         file_name= 'Data Validation.xlsx')
                 
         # Display run is successful message    
         m_info = main_page_info.success('View Result: '+message.loc[['OVERVIEW']][0])
@@ -687,7 +683,8 @@ def analysis(df_submit, run_demo, demo_path, main_page, main_page_info):
         m_col1_but_col2.metric('🏆 Successful Run',after_clean_record)
         m_col1_but_col3.metric('👩 Female Headcount %',round(hc_female/after_clean_record,2)*100)
         # m_col1_but_col4.download_button('📥 Download exclusions', data=demo_validation, file_name='Data Validation.csv',mime='text/csv')
-        m_col1_but_col4.download_button(label='📥 Download exclusions',data=processed_data,file_name= 'Data Validation.xlsx')
+        if operator.not_(df_validation.empty):
+            m_col1_but_col4.download_button(label='📥 Download exclusions',data=processed_data,file_name= 'Data Validation.xlsx')
         
         main_page.markdown("""---""")
         
