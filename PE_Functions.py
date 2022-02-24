@@ -223,10 +223,10 @@ def run(data=None):
         df['SNAPSHOT_DATE'] = df['SNAPSHOT_DATE'].astype("string")
         snapshot = df['SNAPSHOT_DATE'].mode().tolist()[0]
     except:
+        print('date exception')
+        snapshot = date.today()
         error_snapshot = "Invalid snapshot date, Please check submission format is mm/dd/yyyy in data template"
         error_message['SNAPSHOT_DATE'] = error_snapshot
-    if snapshot == np.nan:
-        snapshot = date.today()
     df['NOW'] = pd.to_datetime(snapshot)
         
     # 2.2 Clean up All features ******************
@@ -408,7 +408,6 @@ def run(data=None):
     # print(message.loc[['OVERVIEW']]['Message'])
     
     return df, df_org, df_validation, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2, female_coff, female_pvalue, before_clean_record, after_clean_record,hc_female,fig_r2_gender_gap,fig_raw_gender_gap,fig_net_gender_gap,X_full,budget_df,exclude_feature, include_feature
-
 
 def reme(df,budget_df,X_full,factor, project_group_feature, protect_group_class):
     budget_df['adj_lower'] = budget_df['predicted'] - factor * budget_df['pred_stderr']
