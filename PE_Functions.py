@@ -610,11 +610,18 @@ def analysis(df_submit, run_demo, demo_path, main_page, main_page_info):
         
         # Create download file for remediation
         reme_download_flag = 0
+        df_reme_org = df.drop(columns=['VALIDATION_MESSAGE', 'VALIDATION_FLAG', 'NOW','LOG_SALARY'])
         if operator.not_(seek_budget_df_pv.empty):
-            df_reme_ind = seek_budget_df_pv.merge(seek_budget_df_gap,on='EEID',how='inner')
+            df_reme_ind = seek_budget_df_pv.merge(seek_budget_df_gap,on='EEID',how='inner').merge(df_reme_org,on = 'EEID',how='inner')
+            list_reme = [x for x in df_reme_ind.columns.tolist() if x not in ['EEID','GENDER','SALARY']]
+            list_reme = ['EEID','GENDER','SALARY']+list_reme
+            df_reme_ind = df_reme_ind[list_reme]
             reme_download_flag = 1
         elif (seek_budget_df_pv.empty) and (operator.not_(seek_budget_df_gap.empty)):
-            df_reme_ind = seek_budget_df_gap
+            df_reme_ind = seek_budget_df_gap.merge(df_reme_org,on = 'EEID',how='inner')
+            list_reme = [x for x in df_reme_ind.columns.tolist() if x not in ['EEID','GENDER','SALARY']]
+            list_reme = ['EEID','GENDER','SALARY']+list_reme
+            df_reme_ind = df_reme_ind[list_reme]
             reme_download_flag = 1
         # df_reme_ind.to_excel('df_reme_ind.xlsx')
         
@@ -668,7 +675,7 @@ def analysis(df_submit, run_demo, demo_path, main_page, main_page_info):
                     overview_2.markdown('Your pay gap is at <font color=Green> **low** </font> legal risk. You are the <font color=Green> **market leader** </font> in gender pay equaity (only 1% of companies achieve female employee pays more than male employee all else equal. We recommend to **monitor pay gap periodically** - for instance before and after merit increase, M&A, organization restructure, and major job releveling.', unsafe_allow_html=True)
                 else:
                     overview_2.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Orange; font-size: 150%; opacity: 0.7'>  Action Needed!  </h1>", unsafe_allow_html=True)
-                    overview_2.markdown('Your pay gap is at <font color=Orange> **high** </font> legal risk. You should consider to **reduce pay gap** to statistically insignificant level - See **Secnario A** below. Alternatively you may also consider to **full close** pay gap at a higher cost - See **Scenario B** below', unsafe_allow_html=True)
+                    overview_2.markdown('Your pay gap is at <font color=Orange> **high** </font> legal risk. You should consider to **reduce pay gap** to statistically insignificant level - See **Scenario A** below. Alternatively you may also consider to **full close** pay gap at a higher cost - See **Scenario B** below', unsafe_allow_html=True)
         else:
             overview_2.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Orange; font-size: 150%; opacity: 0.7'> Contact Us </h1>", unsafe_allow_html=True)
             overview_2.markdown('Our standard pay factors are <font color=Orange> **NOT Sufficient** </font> to make pay gap conclusions. We can built an customized model to include additional pay factors, such as high potential, cost center, skills, etc. Please contact us for a free consultation.', unsafe_allow_html=True)
