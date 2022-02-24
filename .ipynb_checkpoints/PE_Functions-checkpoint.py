@@ -441,6 +441,8 @@ def reme(df,budget_df,X_full,factor, project_group_feature, protect_group_class)
     adj_budget_pct = budget/current_total_salary
     
     # print(results.summary())
+    # print("***")
+    # print("Factor: "+str(factor))
     # print(resulting_gap)
     # print(resulting_pvalues)
     # print(adj_count)
@@ -546,7 +548,8 @@ def reme_pvalue_seek(df,budget_df,X_full, project_group_feature, protect_group_c
         for factor in factor_range:
             budget_df, budget, resulting_gap, resulting_pvalues, adj_count, adj_budget_pct = reme(df,budget_df,X_full,factor, project_group_feature, protect_group_class)
 
-            if np.abs(resulting_pvalues-seek_goal)<=threshold:
+            # if np.abs(resulting_pvalues-seek_goal)<=threshold:
+            if resulting_pvalues>=seek_goal:
                 seek_budget_df = budget_df
                 seek_budget = budget
                 seek_resulting_gap  = resulting_gap
@@ -555,7 +558,7 @@ def reme_pvalue_seek(df,budget_df,X_full, project_group_feature, protect_group_c
                 seek_adj_budget_pct = adj_budget_pct
                 seek_success = True
 
-                print('Found factor that close gap:' + str(factor))
+                print('Found factor that close pvalue:' + str(factor))
                 print('Final Gap is '+str(seek_resulting_gap))
                 print('Final p_value is '+str(seek_resulting_pvalues))
                 print('Final Budget is '+str(seek_budget))
@@ -593,10 +596,11 @@ def analysis(df_submit, run_demo, demo_path, main_page, main_page_info):
         m_info = main_page_info.success('Running Remediation Scenario A: Mitigate Legal Risk')
         seek_budget_df_pv,seek_budget_pv,seek_resulting_gap_pv,seek_resulting_pvalues_pv,seek_adj_count_pv, seek_adj_budget_pct_pv,seek_pass_pv, seek_success_pv = reme_pvalue_seek(df,budget_df,X_full, project_group_feature='GENDER', protect_group_class='F', seek_goal=0.07, current_gap = female_coff, current_pvalue = female_pvalue, search_step = -0.005)
         if seek_success_pv == False:
+            print("search p at 0.001 step")
             seek_budget_df_pv,seek_budget_pv,seek_resulting_gap_pv,seek_resulting_pvalues_pv,seek_adj_count_pv, seek_adj_budget_pct_pv,seek_pass_pv, seek_success_pv = reme_pvalue_seek(df,budget_df,X_full, project_group_feature='GENDER', protect_group_class='F', seek_goal=0.07, current_gap = female_coff, current_pvalue = female_pvalue, search_step = -0.001)
         print('pvalue'+str(seek_resulting_pvalues_pv))
         seek_budget_df_pv.to_excel('df_pv.xlsx')
-        
+
         # Run Reme Zero Gap
         m_info = main_page_info.success('Running Remediation Scenario B: Close Gender Gap')
         seek_budget_df_gap,seek_budget_gap,seek_resulting_gap_gap,seek_resulting_pvalues_gap,seek_adj_count_gap, seek_adj_budget_pct_gap,seek_pass_gap, seek_success_gap = reme_gap_seek(df,budget_df,X_full, project_group_feature='GENDER', protect_group_class='F', seek_goal=0, current_gap = female_coff, current_pvalue = female_pvalue, search_step = -0.005)
@@ -774,7 +778,7 @@ def analysis(df_submit, run_demo, demo_path, main_page, main_page_info):
             message_budget_gap = str(locale.format("%d", round(seek_budget_gap/1000,0), grouping=True))+'K'+'\n'+'('+str(round(seek_adj_budget_pct_gap*100,2))+'% of Pay)'
 
         scenario = ['Current','A','B']
-        action = ['🏁 No change','✔️ Mitigate legal risk \n'+'✔️✔️ Reduce gender gap to statistically insignificant level','✔️ Mitigate legal risk \n'+'✔️✔️ Completely close gender gap \n'+'✔️✔️✔️ Become market leader (Top 1%)\n']
+        action = ['🏁 No change','✔️ Mitigate legal risk \n'+'✔️ Reduce gender gap to statistically insignificant level','✔️ Mitigate legal risk \n'+'✔️ Completely close gender gap \n'+'✔️ Become market leader (Top 1%)\n']
         budget = ['0',message_budget_pv,message_budget_gap]
         net_gap = [female_coff,seek_resulting_gap_pv,seek_resulting_gap_gap]
         net_gap = [f'{i*100:.1f}%' for i in net_gap]
@@ -822,5 +826,7 @@ def analysis(df_submit, run_demo, demo_path, main_page, main_page_info):
             processed_reme = output_reme.getvalue()
             
             main_page.download_button(label='💰 Download Salary Adjustment',data = processed_reme,file_name= 'Salary Adjustment.xlsx')
+            
         
         main_page.write(styler.to_html(), unsafe_allow_html=True)
+        st.stop()
