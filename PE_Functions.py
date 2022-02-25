@@ -472,9 +472,8 @@ def get_excel_file_downloader_html(data, file_label='File'):
     bin_str = base64.b64encode(data).decode()
     # bin_str = base64.b64encode(data)
     # href = f'<a href="data:application/octet-stream;base64,{bin_str}" download="{bin_file}">{file_label}</a>'    
-    href = f'<a href="data:application/octet-stream;base64,{bin_str}" download="{file_label}">{file_label}</a>'
-    # href = f'<a href="data:file/xlsx;base64,{bin_str}" download="{file_label}">{file_label}</a>'
-    
+    # href = f'<a href="data:application/octet-stream;base64,{bin_str}" download="{file_label}">{file_label}</a>'
+    href = f'<a href="data:file/xlsx;base64,{bin_str}" download="{file_label}">{file_label}</a>'
     # href = f'<a href="data:file/xlsx;base64,{b64}" download="new_file.{extension}">Download {extension}</a>'
     return href
 
