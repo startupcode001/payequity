@@ -48,7 +48,10 @@ st.markdown(hide_menu_style, unsafe_allow_html=True)
 # Side Panel
 
 st.sidebar.header(' 🎯 Start here')
-st.sidebar.markdown(get_binary_file_downloader_html(demo_path, 'Step 1: Download Instruction and Data Template'), unsafe_allow_html=True)
+
+st.sidebar.markdown("Step 1: 🖱️ 'Save link as...'")
+st.sidebar.markdown(get_binary_file_downloader_html(demo_path, 'Download Instruction and Data Template'), unsafe_allow_html=True)
+
 uploaded_file = st.sidebar.file_uploader('Step 2: Upload Data Template', type=['xlsx'])
 
 submit_butt = False

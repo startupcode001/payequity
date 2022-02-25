@@ -467,17 +467,6 @@ def get_binary_file_downloader_html(bin_file, file_label='File'):
     href = f'<a href="data:application/octet-stream;base64,{bin_str}" download="{os.path.basename(bin_file)}">{file_label}</a>'
     return href
 
-# Download Excel Files
-def get_excel_file_downloader_html(data, file_label='File'):
-    bin_str = base64.b64encode(data).decode()
-    # bin_str = base64.b64encode(data)
-    # href = f'<a href="data:application/octet-stream;base64,{bin_str}" download="{bin_file}">{file_label}</a>'    
-    href = f'<a href="data:application/octet-stream;base64,{bin_str}" download="{file_label}">{file_label}</a>'
-    # href = f'<a href="data:file/xlsx;base64,{bin_str}" download="{file_label}">{file_label}</a>'
-    
-    # href = f'<a href="data:file/xlsx;base64,{b64}" download="new_file.{extension}">Download {extension}</a>'
-    return href
-
 @st.experimental_memo(show_spinner=False)
 # Run Goal Seek for insignificant gap and 0 gap
 def reme_gap_seek(df,budget_df,X_full, project_group_feature, protect_group_class, seek_goal, current_pvalue, current_gap, search_step = -0.001):
@@ -693,17 +682,15 @@ def analysis(df_submit, run_demo, demo_path, main_page, main_page_info):
             main_page.markdown("""---""")
             st.stop()
         main_page.markdown("""---""")
-        m_col1_but_col1, m_col1_but_col2, m_col1_but_col3, m_col1_but_col4 = main_page.columns((1, 1, 1, 1))
+        m_col1_but_col1, m_col1_but_col2, m_col1_but_col3, m_col1_but_col4 = main_page.columns((2, 2, 2, 1))
 
         # Display headcount, Successful Run, Female Percent, download validation file
         m_col1_but_col1.metric('💬 Submission Record',before_clean_record)
         m_col1_but_col2.metric('🏆 Successful Run',after_clean_record)
         m_col1_but_col3.metric('👩 Female Headcount %',round(hc_female/after_clean_record,2)*100)
         if operator.not_(df_validation.empty):
-            # m_col1_but_col4.download_button(label='📥 Download exclusions',data=processed_data,file_name= 'Data Validation.xlsx')
-            m_col1_but_col4.markdown("🖱️ 'Save link as...'")
-            m_col1_but_col4.markdown(get_excel_file_downloader_html(processed_data, 'Data exclusions.xlsx'), unsafe_allow_html=True)
-            
+            m_col1_but_col4.download_button(label='📥 Download exclusions',data=processed_data,file_name= 'Data Validation.xlsx')
+        
         main_page.markdown("""---""")
         
         inc_col, exc_col = main_page.columns((1, 1))
@@ -840,10 +827,8 @@ def analysis(df_submit, run_demo, demo_path, main_page, main_page_info):
             writer_reme.save()
             processed_reme = output_reme.getvalue()
             
-            # main_page.download_button(label='💰 Download Salary Adjustment',data = processed_reme,file_name= 'Salary Adjustment.xlsx')
-            reme_col1, reme_col2 = main_page.columns((1, 6))
-            reme_col1.markdown("🖱️ 'Save link as...'")
-            reme_col2.markdown(get_excel_file_downloader_html(processed_reme, 'Salary Adjustment.xlsx'), unsafe_allow_html=True)
+            main_page.download_button(label='💰 Download Salary Adjustment',data = processed_reme,file_name= 'Salary Adjustment.xlsx')
+            
         
         main_page.write(styler.to_html(), unsafe_allow_html=True)
         st.stop()
