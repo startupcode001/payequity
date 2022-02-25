@@ -69,8 +69,8 @@ c1.write('So what is pay equity? In general, it means compensating employees the
 
 # st.markdown("""---""")
 
-with st.expander("🔔 See Instruction"):
-    st.write("""To start your analysis, please upload data in sidebar. Check out "See Demo" for a sample output.""")
+# with st.expander("🔔 See Instruction"):
+#     st.write("""To start your analysis, please upload data in sidebar. Check out "See Demo" for a sample output.""")
     # e1, e2 = st.columns((1,4))
     # e1.image('Picture/guide2.jpeg',use_column_width='auto')
     # e2.write("""To start your analysis, please upload data in sidebar. Check out "See Demo" for a sample output.""")
