@@ -25,17 +25,6 @@ from io import BytesIO
 st.set_page_config(layout="wide")
 demo_path = Path(__file__).parents[0].__str__()+'/Data/template.xlsx'
 
-# Set Style
-# st.markdown('<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">', unsafe_allow_html=True)
-
-# Set Style
-# m = st.markdown("""
-#     <style>
-#     div.stButton > button:first-child {box-shadow: 0px 0px 0px 2px #9fb4f2;background-color:#3498DB;border-radius:10px;border:1px solid #3498DB;display:inline-block;cursor:pointer;color:#ffffff;font-family:Arial;font-size:13px;padding:12px 37px;text-decoration:none;text-shadow:0px 1px 0px #283966;
-#     &:hover {background-color:#476e9e;}
-#     &:active {position:relative;top:1px;}}
-#     </style>""", unsafe_allow_html=True)
-
 m = st.markdown("""
     <style>
     div.stButton > button:first-child {box-shadow: 0px 0px 0px 2px #3498DB;background-color:#3498DB;border-radius:10px;border:1px solid #3498DB;display:inline-block;cursor:pointer;color:#ffffff;font-family:Arial;font-size:13px;padding:12px 37px;text-decoration:none;

@@ -688,7 +688,6 @@ def analysis(df_submit, run_demo, demo_path, main_page, main_page_info):
         m_col1_but_col1.metric('💬 Submission Record',before_clean_record)
         m_col1_but_col2.metric('🏆 Successful Run',after_clean_record)
         m_col1_but_col3.metric('👩 Female Headcount %',round(hc_female/after_clean_record,2)*100)
-        # m_col1_but_col4.download_button('📥 Download exclusions', data=demo_validation, file_name='Data Validation.csv',mime='text/csv')
         if operator.not_(df_validation.empty):
             m_col1_but_col4.download_button(label='📥 Download exclusions',data=processed_data,file_name= 'Data Validation.xlsx')
         
