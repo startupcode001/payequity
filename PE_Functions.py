@@ -840,7 +840,7 @@ def analysis(df_submit, run_demo, demo_path, main_page, main_page_info):
             processed_reme = output_reme.getvalue()
             
             # main_page.download_button(label='💰 Download Salary Adjustment',data = processed_reme,file_name= 'Salary Adjustment.xlsx')
-            reme_col1, reme_col2 = main_page.columns((1, 6))
+            reme_col1, reme_col2 = main_page.columns((1, 4))
             reme_col1.markdown("🖱️ 'Save link as...'")
             reme_col2.markdown(get_excel_file_downloader_html(processed_reme, 'Salary Adjustment.xlsx'), unsafe_allow_html=True)
         
