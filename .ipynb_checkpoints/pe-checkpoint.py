@@ -58,14 +58,14 @@ submit_butt = False
 if uploaded_file is not None:
     submit_butt = st.sidebar.button('🚀 Run Analysis')
 
-st.sidebar.write('Step 3: Review result in main panel')
+st.sidebar.write('Step 3: Review the output in the main panel')
 st.sidebar.markdown("""---""")
 
 # Main Panel
 c1, c2 = st.columns((2, 1))
 c2.image('Picture/salary.jpeg',use_column_width='auto')
 c1.title('PayX')
-c1.write('So what is pay equity? In general, it means compensating employees the same when they perform the same or similar job duties, while accounting for ***pay factors***, such as their job level, job function, experience, performance and tenure with the employer.')
+c1.write('How does pay equity work? In general, the intent is to pay employees in the same manner when performing similar duties, while taking into account ***pay factors*** such as level, function, location, experience, and performance.')
 
 # st.markdown("""---""")
 
