@@ -169,7 +169,7 @@ def clean_optional_feature(data, feature, valid_feature_list, warning_message, e
     if check_na_feature == 1:
         # Step 1, determine if there is no input, if yes, then this is an optional factor and we should exclude from our model
         exclude_col.append(feature)
-        warning_feature = feature + ": exclude this optional factor"
+        warning_feature = feature + ": exclude this optional driver"
         warning_message[feature] = warning_feature
     else:
         # Step 2, clean up data just like the required features
@@ -235,9 +235,10 @@ def run(data=None):
     df,warning_message = clean_req_feature(data = df,feature = "SALARY",valid_feature_list=[],warning_message = warning_message, data_type='numeric')
     df,warning_message = clean_req_feature(data = df,feature = "JOB_LEVEL_OR_COMP_GRADE",valid_feature_list=[],warning_message = warning_message, data_type="string")
     df,warning_message = clean_req_feature(data = df,feature = "JOB_FUNCTION",valid_feature_list=[],warning_message = warning_message,data_type="string")
-    df,warning_message = clean_req_feature(data = df,feature = "STATE",valid_feature_list=[],warning_message = warning_message,data_type="string")
+    df,warning_message = clean_req_feature(data = df,feature = "COUNTRY",valid_feature_list=[],warning_message = warning_message,data_type="string")
+    df,warning_message = clean_req_feature(data = df,feature = "LOCATION",valid_feature_list=[],warning_message = warning_message,data_type="string")
     df,warning_message = clean_req_feature(data = df,feature = "FULL_TIME",valid_feature_list=["Y","N"],warning_message = warning_message,data_type="string")
-    df,warning_message = clean_req_feature(data = df,feature = "FLSA_EXEMPT",valid_feature_list=["Y","N"],warning_message = warning_message,data_type="string")
+    df,warning_message = clean_req_feature(data = df,feature = "EXEMPT",valid_feature_list=["Y","N"],warning_message = warning_message,data_type="string")
 
     # Clean up optional features
     df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "ETHNICITY",valid_feature_list=[],warning_message = warning_message,exclude_col = exclude_col, data_type="string")
@@ -586,7 +587,7 @@ def reme_pvalue_seek(df,budget_df,X_full, project_group_feature, protect_group_c
     
     return seek_budget_df,seek_budget,seek_resulting_gap,seek_resulting_pvalues,seek_adj_count, seek_adj_budget_pct,seek_pass,seek_success
 
-def analysis(df_submit, run_demo, demo_path, main_page, main_page_info):
+def analysis(df_submit, run_demo, demo_path, display_path, main_page, main_page_info):
     # Process df (not demo datafile)    
     with st.spinner('Running analysis, Please wait for it...'):
         m_info = main_page_info.success('Reading Data')
@@ -594,8 +595,13 @@ def analysis(df_submit, run_demo, demo_path, main_page, main_page_info):
             # Demo Run
             df = pd.read_excel(demo_path,sheet_name="Submission")
         else:
-            df = pd.read_excel(df_submit,sheet_name="Submission")
-            
+            df = pd.read_excel(df_submit,sheet_name="Submission")    
+        
+        
+        # Convert program column names to display
+        df_name = pd.read_excel(display_path,sheet_name="Sheet1")
+        display_map = dict(zip(df_name['PROGRAM_NAME'], df_name['DISPLAY_NAME']))
+        
         # Run discovery model:
         m_info = main_page_info.success('Running Gap Analysis')
         df, df_org,  df_validation, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2, female_coff, female_pvalue, before_clean_record, after_clean_record,hc_female,fig_r2_gender_gap,fig_raw_gender_gap,fig_net_gender_gap,X_full,budget_df,exclude_feature, include_feature = run(df)        
@@ -636,9 +642,13 @@ def analysis(df_submit, run_demo, demo_path, main_page, main_page_info):
         # df_reme_ind.to_excel('df_reme_ind.xlsx')
         
         # Show exclude and include features
+        
+        include_feature = [display_map.get(item,item)  for item in include_feature]
+        exclude_feature = [display_map.get(item,item)  for item in exclude_feature]
+        
         include_feature_text =  ', '.join(include_feature)
         exclude_feature_text =  ', '.join(exclude_feature)
-        # st.sidebar.options = st.sidebar.markdown('Pay factors included in model:' + include_feature_text)
+        # st.sidebar.options = st.sidebar.markdown('Pay drivers included in model:' + include_feature_text)
         
         # Run data validation
         m_info = main_page_info.success('Output Data Validation')
@@ -684,11 +694,11 @@ def analysis(df_submit, run_demo, demo_path, main_page, main_page_info):
                     overview_2.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 150%; opacity: 0.7'>  Congratulation!  </h1>", unsafe_allow_html=True)
                     overview_2.markdown('Your pay gap is at <font color=Green> **low** </font> legal risk. You are a <font color=Green> **market leader** </font> in gender pay equaity (Only 1% of companies have higher female earnings than men all else equal). We recommend periodic monitoring of the pay gap, for example before and after merit increases, mergers and acquisitions, organizational restructuring, and relevel of key jobs.', unsafe_allow_html=True)
                 else:
-                    overview_2.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Orange; font-size: 150%; opacity: 0.7'>  Action Needed!  </h1>", unsafe_allow_html=True)
+                    overview_2.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Orange; font-size: 150%; opacity: 0.7'> Be mindful of legal risks!  </h1>", unsafe_allow_html=True)
                     overview_2.markdown('Your pay gap poses a <font color=Orange> **high** </font> legal risk. You should consider to reducing it to a statistically insignificant level - See Scenario A below. An alternative is to consider closing the pay gap - see Scenario B below.', unsafe_allow_html=True)
         else:
             overview_2.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Orange; font-size: 150%; opacity: 0.7'> Contact Us </h1>", unsafe_allow_html=True)
-            overview_2.markdown('The default compensation factors are <font color=Orange> **not robust** </font> in drawing conclusions on the salary gap. In general, we can improve the model robustness by adding additional factors such as high potential, cost centre, skills and so on. Please contact us for an open consultation.', unsafe_allow_html=True)            
+            overview_2.markdown('The default pay drivers are <font color=Orange> **not robust** </font> in drawing conclusions on the salary gap. In general, we can improve the model robustness by adding additional drivers such as high potential, cost centre, skills and so on. Please contact us for an open consultation.', unsafe_allow_html=True)            
             main_page.markdown("""---""")
             st.stop()
         main_page.markdown("""---""")
@@ -706,10 +716,10 @@ def analysis(df_submit, run_demo, demo_path, main_page, main_page_info):
         main_page.markdown("""---""")
         
         inc_col, exc_col = main_page.columns((1, 1))
-        inc_col.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 110%; opacity: 0.7'> ✔️ Pay factors included in analysis:  </h1>", unsafe_allow_html=True)        
+        inc_col.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 110%; opacity: 0.7'> ✔️ Pay drivers included in analysis:  </h1>", unsafe_allow_html=True)        
         inc_col.markdown(include_feature_text, unsafe_allow_html=True)
         
-        exc_col.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Orange; font-size: 110%; opacity: 0.7'> ⚠️ Pay factors excluded from analysis:  </h1>", unsafe_allow_html=True)        
+        exc_col.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Orange; font-size: 110%; opacity: 0.7'> ⚠️ Pay drivers excluded from analysis:  </h1>", unsafe_allow_html=True)        
         exc_col.markdown(exclude_feature_text, unsafe_allow_html=True)
         
         # r2= 0.9
@@ -728,7 +738,7 @@ def analysis(df_submit, run_demo, demo_path, main_page, main_page_info):
             metric_R2_3.markdown("The model is **strong** to explain the variation in pay. Let us look at the pay gap.", unsafe_allow_html=True)
         else:
             metric_R2_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Orange; font-size: 110%; opacity: 0.7'> ⚠️ Below market  </h1>" , unsafe_allow_html=True)
-            metric_R2_3.markdown("The default compensation factors are <font color=Orange> **not robust** </font> in drawing conclusions on the salary gap. In general, we can improve the model robustness by adding additional factors such as talent potential, cost centre, skills and so on. Please contact us for an open consultation.", unsafe_allow_html=True)
+            metric_R2_3.markdown("The default compensation drivers are <font color=Orange> **not robust** </font> in drawing conclusions on the salary gap. In general, we can improve the model robustness by adding additional drivers such as talent potential, cost centre, skills and so on. Please contact us for an open consultation.", unsafe_allow_html=True)
             st.stop()
         # metric_R2_3.markdown("<h1 style='text-align: center; vertical-align: bottom; color: Black; background-color: #3498DB; opacity: 0.7; border-style: dotted'>Observation</h1>", unsafe_allow_html=True)
         
@@ -793,6 +803,9 @@ def analysis(df_submit, run_demo, demo_path, main_page, main_page_info):
         scenario = ['Current','A','B']
         action = ['🏁 No change','✔️ Mitigate legal risk \n'+'✔️ Reduce the gender gap to a statistical insignificant level.','✔️ Mitigate legal risk \n'+'✔️ Completely close gender gap \n'+'✔️ Become a market leader (Top 1%)\n']
         budget = ['0',message_budget_pv,message_budget_gap]
+        
+        if abs(seek_resulting_gap_gap)<0.0005:
+                seek_resulting_gap_gap = 0
         net_gap = [female_coff,seek_resulting_gap_pv,seek_resulting_gap_gap]
         net_gap = [f'{i*100:.1f}%' for i in net_gap]
 

@@ -24,6 +24,7 @@ from io import BytesIO
 # Set Path
 st.set_page_config(layout="wide")
 demo_path = Path(__file__).parents[0].__str__()+'/Data/template.xlsx'
+display_path = Path(__file__).parents[0].__str__()+'/Data/Display Name.xlsx'
 
 m = st.markdown("""
     <style>
@@ -65,7 +66,7 @@ st.sidebar.markdown("""---""")
 c1, c2 = st.columns((2, 1))
 c2.image('Picture/salary.jpeg',use_column_width='auto')
 c1.title('PayX')
-c1.write('How does pay equity work? In general, the intent is to pay employees in the same manner when performing similar duties, while taking into account ***pay factors*** such as level, function, location, experience, and performance.')
+c1.write('How does pay equity work? In general, the intent is to pay employees in the same manner when performing similar duties, while taking into account ***pay drivers*** such as level, function, location, experience, and performance.')
 
 # st.markdown("""---""")
 
@@ -81,7 +82,7 @@ with main_page.container():
     
     if submit_butt == True:
         main_page_info.info('Running input file.')
-        analysis(df_submit = uploaded_file, run_demo = False, demo_path = demo_path, main_page = main_page, main_page_info = main_page_info)
+        analysis(df_submit = uploaded_file, run_demo = False, demo_path = demo_path, display_path = display_path, main_page = main_page, main_page_info = main_page_info)
         
     else:
         m_info = main_page_info.info('Awaiting the upload of the data template.')
@@ -91,7 +92,7 @@ with main_page.container():
         m_col2_but = m_col2.button('Close Demo')
         
         if m_col1_but:
-            analysis(df_submit = None, run_demo = True, demo_path = demo_path, main_page = main_page, main_page_info = main_page_info)
+            analysis(df_submit = None, run_demo = True, demo_path = demo_path, display_path = display_path, main_page = main_page, main_page_info = main_page_info)
             
         if m_col2_but:
             main_page.empty()
