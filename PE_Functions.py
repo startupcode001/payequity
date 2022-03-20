@@ -766,7 +766,9 @@ def analysis(df_submit, run_demo, demo_path, display_path, main_page, main_page_
             r2_format = round(r2*100,0)
             options = {
                   "series":[
-                    {
+                    {"max":100,
+                     "min":0,
+                     "splitNumber": 10,
                       "type":"gauge",
                       "axisLine":{
                         "lineStyle":{
@@ -807,7 +809,7 @@ def analysis(df_submit, run_demo, demo_path, display_path, main_page, main_page_
                       "axisLabel":{
                         "color":"auto",
                         "distance":10,
-                        "fontSize":10,
+                        "fontSize":10
                       },
                       "detail":{
                         "valueAnimation":True,
