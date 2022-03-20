@@ -12,3 +12,4 @@ sklearn
 statsmodels
 matplotlib
 seaborn
+st_echarts

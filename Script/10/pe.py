@@ -23,8 +23,7 @@ from io import BytesIO
 
 # Set Path
 st.set_page_config(layout="wide")
-demo_path = Path(__file__).parents[0].__str__()+'/Data/Pay Equity Demo.xlsx'
-client_path = Path(__file__).parents[0].__str__()+'/Data/Pay Equity Data Template.xlsx'
+demo_path = Path(__file__).parents[0].__str__()+'/Data/template.xlsx'
 display_path = Path(__file__).parents[0].__str__()+'/Data/Display Name.xlsx'
 
 m = st.markdown("""
@@ -52,7 +51,7 @@ st.markdown(hide_menu_style, unsafe_allow_html=True)
 st.sidebar.header(' 🎯 Start here')
 
 st.sidebar.markdown("Step 1: 🖱️ 'Save link as...'")
-st.sidebar.markdown(get_binary_file_downloader_html(client_path, 'Download Instruction and Data Template'), unsafe_allow_html=True)
+st.sidebar.markdown(get_binary_file_downloader_html(demo_path, 'Download Instruction and Data Template'), unsafe_allow_html=True)
 
 uploaded_file = st.sidebar.file_uploader('Step 2: Upload Data Template', type=['xlsx'])
 

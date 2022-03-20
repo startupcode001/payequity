@@ -8,7 +8,6 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import seaborn as sns
 import plotly.graph_objects as go
-from streamlit_echarts import st_echarts
 
 from sklearn.preprocessing import StandardScaler,MinMaxScaler
 from sklearn.experimental import enable_iterative_imputer
@@ -761,69 +760,7 @@ def analysis(df_submit, run_demo, demo_path, display_path, main_page, main_page_
         main_page.markdown("""---""")
         metric_R2_1, metric_R2_2, metric_R2_3 = main_page.columns((1, 1.7, 1.7))            
         metric_R2_1.markdown("<h1 style='text-align: left; vertical-align: bottom; font-size: 150%; color: #3498DB; opacity: 0.7'>Robustness</h1>", unsafe_allow_html=True)
-        # metric_R2_1.plotly_chart(fig_r2_gender_gap, use_container_width=True)
-        with metric_R2_1:
-            r2_format = round(r2*100,0)
-            options = {
-                  "series":[
-                    {
-                      "type":"gauge",
-                      "axisLine":{
-                        "lineStyle":{
-                          "width":10,
-                          "color":[
-                            [
-                              0.7,
-                              "#9ca5af"
-                            ],
-                            [
-                              1,
-                              "#6bd47c"
-                            ]
-                          ]
-                        }
-                      },
-                      "pointer":{
-                        "itemStyle":{
-                          "color":"auto"
-                        }
-                      },
-                      "axisTick":{
-                        "distance":-30,
-                        "length":2,
-                        "lineStyle":{
-                          "color":"#fff",
-                          "width":2
-                        }
-                      },
-                      "splitLine":{
-                        "distance":-5,
-                        "length":10,
-                        "lineStyle":{
-                          "color":"#fff",
-                          "width":1
-                        }
-                      },
-                      "axisLabel":{
-                        "color":"auto",
-                        "distance":10,
-                        "fontSize":10,
-                      },
-                      "detail":{
-                        "valueAnimation":True,
-                        "formatter":"{value}%",
-                        "color":"auto",
-                        "fontSize": 20
-                      },
-                      "data":[
-                        {
-                          "value":r2_format
-                        }
-                      ]
-                    }
-                  ]
-                }
-            st_echarts(options=options,height="200px") 
+        metric_R2_1.plotly_chart(fig_r2_gender_gap, use_container_width=True)
         
         metric_R2_2.markdown("<h1 style='text-align: left; vertical-align: bottom;color: #3498DB; font-size: 150%; opacity: 0.7'>Benchmark</h1>", unsafe_allow_html=True)
         metric_R2_2.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 110%; opacity: 0.7'> 🌐 70% ~ 100%  </h1>" "  \n"  "Robustness measures whether the standard model adequately explains compensation decisions. For instance, 80% means that the standard model explains 80% of the pay difference between employees.", unsafe_allow_html=True)

@@ -8,7 +8,6 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import seaborn as sns
 import plotly.graph_objects as go
-from streamlit_echarts import st_echarts
 
 from sklearn.preprocessing import StandardScaler,MinMaxScaler
 from sklearn.experimental import enable_iterative_imputer
@@ -30,26 +29,15 @@ import locale
 
 # Helper Functions Starts here #
 
-# def rename_column(df):
-#     df.columns = [c.strip().upper().replace(' ', '_') for c in df.columns]
-#     df.columns = [c.strip().upper().replace('/', '_') for c in df.columns]
-#     df.columns = [c.strip().upper().replace('-', '_') for c in df.columns]
-#     df.columns = [c.strip().upper().replace('(', '') for c in df.columns]
-#     df.columns = [c.strip().upper().replace(')', '') for c in df.columns]
-#     df.columns = [c.strip().upper().replace('.', '') for c in df.columns]
-#     df.columns = [c.strip().upper().replace('___', '_') for c in df.columns]
-#     df.columns = [c.strip().upper().replace('__', '_') for c in df.columns]
-#     return df
-
 def rename_column(df):
-    df.columns = [c.strip().replace(' ', '_') for c in df.columns]
-    df.columns = [c.strip().replace('/', '_') for c in df.columns]
-    df.columns = [c.strip().replace('-', '_') for c in df.columns]
-    df.columns = [c.strip().replace('(', '') for c in df.columns]
-    df.columns = [c.strip().replace(')', '') for c in df.columns]
-    df.columns = [c.strip().replace('.', '') for c in df.columns]
-    df.columns = [c.strip().replace('___', '_') for c in df.columns]
-    df.columns = [c.strip().replace('__', '_') for c in df.columns]
+    df.columns = [c.strip().upper().replace(' ', '_') for c in df.columns]
+    df.columns = [c.strip().upper().replace('/', '_') for c in df.columns]
+    df.columns = [c.strip().upper().replace('-', '_') for c in df.columns]
+    df.columns = [c.strip().upper().replace('(', '') for c in df.columns]
+    df.columns = [c.strip().upper().replace(')', '') for c in df.columns]
+    df.columns = [c.strip().upper().replace('.', '') for c in df.columns]
+    df.columns = [c.strip().upper().replace('___', '_') for c in df.columns]
+    df.columns = [c.strip().upper().replace('__', '_') for c in df.columns]
     return df
 
 def plot_gender_gap(coff):
@@ -163,7 +151,7 @@ def clean_req_feature(data, feature, valid_feature_list, warning_message, data_t
 
     # Record message
     if exclude_feature_num>0:
-        warning_feature = feature+": exclude "+str(exclude_feature_num)+" invalid or blank records"
+        warning_feature = feature+": exclude "+str(exclude_feature_num)+" invalid records"
         da.loc[da[val_flag_col]==1, val_col] = da[val_col]+" | "+ warning_feature
     else:
         warning_feature = feature+": Successful Run"
@@ -222,18 +210,9 @@ def run(data=None):
     except:
         error_file_read = "Unable to read submission file, Please download and update data template again"
         error_message['File_Read'] = error_file_read
-
-    # df.columns = [c.strip().upper().replace(' ', '_') for c in df.columns]
-    # df.columns = [c.strip().upper().replace('/', '_') for c in df.columns]
-    
-    # df.columns = [c.strip().replace(' ', '_') for c in df.columns]
-    # df.columns = [c.strip().replace('/', '_') for c in df.columns]
-    
-    df = rename_column(df)
-    
-    df_type = df.iloc[0]
-    df = df.iloc[1:]
-    
+    df.columns = [c.strip().upper().replace(' ', '_') for c in df.columns]
+    df.columns = [c.strip().upper().replace('/', '_') for c in df.columns]
+ 
     # 2.1 Data Cleaning ****************************
     # Data Validation
     df['VALIDATION_MESSAGE']=""
@@ -269,18 +248,6 @@ def run(data=None):
     df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "PERFORMANCE",valid_feature_list=[],warning_message = warning_message,exclude_col = exclude_col, data_type="string")
     df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "DATE_OF_BIRTH",valid_feature_list=[],warning_message = warning_message,exclude_col = exclude_col, data_type="datetime")
     df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "DATE_OF_HIRE",valid_feature_list=[],warning_message = warning_message,exclude_col = exclude_col, data_type="datetime")
-    
-    # Clean up customized features
-    standard_col = ['SNAPSHOT_DATE','EEID','SALARY','GENDER','ETHNICITY',
-                'JOB_LEVEL_OR_COMP_GRADE','JOB_FUNCTION','COUNTRY','LOCATION','FULL_TIME',
-                'EXEMPT','PEOPLE_MANAGER','EDUCATION','PROMOTION','PERFORMANCE','DATE_OF_BIRTH','DATE_OF_HIRE']
-    all_col = df.columns.tolist()
-    cust_col = [x for x in all_col if x not in standard_col]
-    df_type = pd.DataFrame(df_type).reset_index()
-    df_type.columns = ['COL_NAME','TYPE']
-    df_type = df_type[~df_type['COL_NAME'].isin(standard_col)]
-    for i, row in df_type.iterrows():
-        df,warning_message, exclude_col = clean_optional_feature(data = df,feature = row['COL_NAME'],valid_feature_list=[],warning_message = warning_message,exclude_col = exclude_col, data_type=row['TYPE'])
     
     # Record Message
     df_org = df.copy()
@@ -701,7 +668,7 @@ def analysis(df_submit, run_demo, demo_path, display_path, main_page, main_page_
 
         cell_format.set_pattern(1)  # This is optional when using a solid fill.
         cell_format.set_bg_color('yellow')
-        worksheet.write('A1', 'Please see the instructions for a valid record.',cell_format)
+        worksheet.write('A1', 'Plese update the following entry',cell_format)
         
         writer.save()
         processed_data = output.getvalue()
@@ -761,69 +728,7 @@ def analysis(df_submit, run_demo, demo_path, display_path, main_page, main_page_
         main_page.markdown("""---""")
         metric_R2_1, metric_R2_2, metric_R2_3 = main_page.columns((1, 1.7, 1.7))            
         metric_R2_1.markdown("<h1 style='text-align: left; vertical-align: bottom; font-size: 150%; color: #3498DB; opacity: 0.7'>Robustness</h1>", unsafe_allow_html=True)
-        # metric_R2_1.plotly_chart(fig_r2_gender_gap, use_container_width=True)
-        with metric_R2_1:
-            r2_format = round(r2*100,0)
-            options = {
-                  "series":[
-                    {
-                      "type":"gauge",
-                      "axisLine":{
-                        "lineStyle":{
-                          "width":10,
-                          "color":[
-                            [
-                              0.7,
-                              "#9ca5af"
-                            ],
-                            [
-                              1,
-                              "#6bd47c"
-                            ]
-                          ]
-                        }
-                      },
-                      "pointer":{
-                        "itemStyle":{
-                          "color":"auto"
-                        }
-                      },
-                      "axisTick":{
-                        "distance":-30,
-                        "length":2,
-                        "lineStyle":{
-                          "color":"#fff",
-                          "width":2
-                        }
-                      },
-                      "splitLine":{
-                        "distance":-5,
-                        "length":10,
-                        "lineStyle":{
-                          "color":"#fff",
-                          "width":1
-                        }
-                      },
-                      "axisLabel":{
-                        "color":"auto",
-                        "distance":10,
-                        "fontSize":10,
-                      },
-                      "detail":{
-                        "valueAnimation":True,
-                        "formatter":"{value}%",
-                        "color":"auto",
-                        "fontSize": 20
-                      },
-                      "data":[
-                        {
-                          "value":r2_format
-                        }
-                      ]
-                    }
-                  ]
-                }
-            st_echarts(options=options,height="200px") 
+        metric_R2_1.plotly_chart(fig_r2_gender_gap, use_container_width=True)
         
         metric_R2_2.markdown("<h1 style='text-align: left; vertical-align: bottom;color: #3498DB; font-size: 150%; opacity: 0.7'>Benchmark</h1>", unsafe_allow_html=True)
         metric_R2_2.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 110%; opacity: 0.7'> 🌐 70% ~ 100%  </h1>" "  \n"  "Robustness measures whether the standard model adequately explains compensation decisions. For instance, 80% means that the standard model explains 80% of the pay difference between employees.", unsafe_allow_html=True)
