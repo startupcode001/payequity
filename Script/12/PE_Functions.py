@@ -9,7 +9,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import plotly.graph_objects as go
 from streamlit_echarts import st_echarts
-import hydralit_components as hc
 
 from sklearn.preprocessing import StandardScaler,MinMaxScaler
 from sklearn.experimental import enable_iterative_imputer
@@ -633,6 +632,7 @@ def analysis(df_submit, run_demo, demo_path, display_path, main_page, main_page_
         else:
             df = pd.read_excel(df_submit,sheet_name="Submission")    
         
+        
         # Convert program column names to display
         df_name = pd.read_excel(display_path,sheet_name="Sheet1")
         display_map = dict(zip(df_name['PROGRAM_NAME'], df_name['DISPLAY_NAME']))
@@ -729,7 +729,7 @@ def analysis(df_submit, run_demo, demo_path, display_path, main_page, main_page_
                     overview_2.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 150%; opacity: 0.7'>  Congratulation!  </h1>", unsafe_allow_html=True)
                     overview_2.markdown('Your pay gap is at <font color=Green> **low** </font> legal risk. You are a <font color=Green> **market leader** </font> in gender pay equaity (Only 1% of companies have higher female earnings than men all else equal). We recommend periodic monitoring of the pay gap, for example before and after merit increases, mergers and acquisitions, organizational restructuring, and relevel of key jobs.', unsafe_allow_html=True)
                 else:
-                    overview_2.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Orange; font-size: 150%; opacity: 0.7'> ⚠️ Be mindful of legal risks  </h1>", unsafe_allow_html=True)
+                    overview_2.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Orange; font-size: 150%; opacity: 0.7'> Be mindful of legal risks!  </h1>", unsafe_allow_html=True)
                     overview_2.markdown('Your pay gap poses a <font color=Orange> **high** </font> legal risk. You should consider to reducing it to a statistically insignificant level - See Scenario A below. An alternative is to consider closing the pay gap - see Scenario B below.', unsafe_allow_html=True)
         else:
             overview_2.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Orange; font-size: 150%; opacity: 0.7'> Contact Us </h1>", unsafe_allow_html=True)
@@ -742,13 +742,7 @@ def analysis(df_submit, run_demo, demo_path, display_path, main_page, main_page_
         # Display headcount, Successful Run, Female Percent, download validation file
         m_col1_but_col1.metric('💬 Submission Record',before_clean_record)
         m_col1_but_col2.metric('🏆 Successful Run',after_clean_record)
-        m_col1_but_col3.metric('👩 Female %',round(hc_female/after_clean_record,2)*100)
-#         with m_col1_but_col1:
-#             hc.info_card(title='Submission', content=str(before_clean_record)+' records', sentiment='good',bar_value=before_clean_record)
-#         with m_col1_but_col2:
-#             hc.info_card(title='Successful Run', content=str(after_clean_record)+' records', sentiment='female',bar_value=after_clean_record)            
-#         with m_col1_but_col3:
-#             hc.info_card(title='Female %', content=str(round(hc_female/after_clean_record*100,0)), theme_override=get_hc_theme('female'))
+        m_col1_but_col3.metric('👩 Female Headcount %',round(hc_female/after_clean_record,2)*100)
         if operator.not_(df_validation.empty):
             # m_col1_but_col4.download_button(label='📥 Download exclusions',data=processed_data,file_name= 'Data Validation.xlsx')
             m_col1_but_col4.markdown("🖱️ 'Save link as...'")
@@ -757,9 +751,10 @@ def analysis(df_submit, run_demo, demo_path, display_path, main_page, main_page_
         main_page.markdown("""---""")
         
         inc_col, exc_col = main_page.columns((1, 1))
-        inc_col.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 110%; opacity: 0.7'> ✔️ Pay drivers included:  </h1>", unsafe_allow_html=True)
-        inc_col.markdown(include_feature_text, unsafe_allow_html=True)       
-        exc_col.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Orange; font-size: 110%; opacity: 0.7'> ⚠️ Pay drivers excluded:  </h1>", unsafe_allow_html=True)        
+        inc_col.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 110%; opacity: 0.7'> ✔️ Pay drivers included in analysis:  </h1>", unsafe_allow_html=True)        
+        inc_col.markdown(include_feature_text, unsafe_allow_html=True)
+        
+        exc_col.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Orange; font-size: 110%; opacity: 0.7'> ⚠️ Pay drivers excluded from analysis:  </h1>", unsafe_allow_html=True)        
         exc_col.markdown(exclude_feature_text, unsafe_allow_html=True)
         
         # r2= 0.9
@@ -793,6 +788,7 @@ def analysis(df_submit, run_demo, demo_path, display_path, main_page, main_page_
         with metric_net_gap_1:
             gender_gap_options = get_gender_gap_option(female_coff)
             st_echarts(options=gender_gap_options,height="200px")
+
         metric_net_gap_2.markdown("<h1 style='text-align: left; vertical-align: bottom;color: #3498DB; font-size: 150%; opacity: 0.7'>Benchmark</h1>", unsafe_allow_html=True)
         metric_net_gap_2.write("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 110%; opacity: 0.7'> 🌐 > -5% </h1>" "For each dollar paid to male employees, how much (less) or more goes to female employees. For example -3% means that on average women are paid 3% LESS compared to men. Overall, the U.S. net gender gap is between -5% and +1%.", unsafe_allow_html=True)
 
