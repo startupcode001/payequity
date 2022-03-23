@@ -25,8 +25,8 @@ from io import BytesIO
 
 # Set Path
 st.set_page_config(layout="wide")
-demo_path = Path(__file__).parents[0].__str__()+'/Data/Pay Equity Demo.xlsx'
-client_path = Path(__file__).parents[0].__str__()+'/Data/Pay Equity Data Template.xlsx'
+# demo_path = Path(__file__).parents[0].__str__()+'/Data/Pay Equity Demo.xlsx'
+file_path = Path(__file__).parents[0].__str__()+'/Data/Pay Equity Data Template.xlsx'
 display_path = Path(__file__).parents[0].__str__()+'/Data/Display Name.xlsx'
 
 m = st.markdown("""
@@ -54,7 +54,7 @@ st.markdown(hide_menu_style, unsafe_allow_html=True)
 st.sidebar.header(' 🎯 Start here')
 
 st.sidebar.markdown("Step 1: 🖱️ 'Save link as...'")
-st.sidebar.markdown(get_binary_file_downloader_html(client_path, 'Download Instruction and Data Template'), unsafe_allow_html=True)
+st.sidebar.markdown(get_binary_file_downloader_html(file_path, 'Download Instruction and Data Template'), unsafe_allow_html=True)
 
 uploaded_file = st.sidebar.file_uploader('Step 2: Upload Data Template', type=['xlsx'])
 
@@ -69,7 +69,7 @@ st.sidebar.markdown("""---""")
 c1, c2 = st.columns((2, 1))
 c2.image('Picture/salary.jpeg',use_column_width='auto')
 c1.title('PayX')
-c1.write('How does pay equity work? In general, the intent is to pay employees in the same manner when performing similar duties, while taking into account ***pay drivers*** such as level, function, location, experience, and performance.')
+c1.write('PayX measure the value and the statistical significance of the **net gender pay gap**. That is, we compare pay between men and women with similar level, function, location, experience and performance, etc to ensure the difference is gender-based. Statistical significance allows us to quantify if a gap is due to chance or gender bias.')
 
 # st.markdown("""---""")
 
@@ -85,7 +85,7 @@ with main_page.container():
     
     if submit_butt == True:
         main_page_info.info('Running input file.')
-        analysis(df_submit = uploaded_file, run_demo = False, demo_path = demo_path, display_path = display_path, main_page = main_page, main_page_info = main_page_info)
+        analysis(df_submit = uploaded_file, run_demo = False, file_path = file_path, display_path = display_path, main_page = main_page, main_page_info = main_page_info)
         
     else:
         m_info = main_page_info.info('Awaiting the upload of the data template.')
@@ -95,7 +95,7 @@ with main_page.container():
         m_col2_but = m_col2.button('Close Demo')
         
         if m_col1_but:
-            analysis(df_submit = None, run_demo = True, demo_path = demo_path, display_path = display_path, main_page = main_page, main_page_info = main_page_info)
+            analysis(df_submit = None, run_demo = True, file_path = file_path, display_path = display_path, main_page = main_page, main_page_info = main_page_info)
             
         if m_col2_but:
             main_page.empty()
