@@ -13,3 +13,4 @@ statsmodels
 matplotlib
 seaborn
 streamlit-echarts
+hydralit_components
