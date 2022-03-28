@@ -14,3 +14,11 @@ matplotlib
 seaborn
 streamlit-echarts
 hydralit_components
+click
+requests
+requests_toolbelt
+gcloud
+oauth2client
+python-jwt
+pycryptodome
+pyrebase4

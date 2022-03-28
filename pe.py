@@ -15,7 +15,7 @@ import os
 
 import locale
 
-import pyrebase
+# import pyrebase
 
 from PE_Functions import *
 from PE_Parameter import *
