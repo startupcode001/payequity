@@ -15,6 +15,8 @@ import os
 
 import locale
 
+# import pyrebase
+
 from PE_Functions import *
 from PE_Parameter import *
 
@@ -28,10 +30,29 @@ st.set_page_config(layout="wide")
 # demo_path = Path(__file__).parents[0].__str__()+'/Data/Pay Equity Demo.xlsx'
 file_path = Path(__file__).parents[0].__str__()+'/Data/Pay Equity Data Template.xlsx'
 display_path = Path(__file__).parents[0].__str__()+'/Data/Display Name.xlsx'
+# style_path = Path(__file__).parents[0].__str__()+'/Style/style.css'
+# with open(style_path) as f:
+#     st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
+
+# Set Styles
+# metric = st.markdown("""
+#     <style>
+#     div.css-12w0qpk.e1tzin5v2
+#          {background-color: #EFF8F7
+#          }
+#     div.css-1ht1j8u.e16fv1kl0
+#         {font-size: 15px; 
+#         }
+#     </style>""", unsafe_allow_html=True)
+
+info_card = st.markdown("""
+    <style>
+    div.css-21e425.e1tzin5v4 {font-size: 5px}
+    </style>""", unsafe_allow_html=True)
 
 m = st.markdown("""
     <style>
-    div.stButton > button:first-child {box-shadow: 0px 0px 0px 2px #3498DB;background-color:#3498DB;border-radius:10px;border:1px solid #3498DB;display:inline-block;cursor:pointer;color:#ffffff;font-family:Arial;font-size:13px;padding:12px 37px;text-decoration:none;
+    div.stButton > button:first-child {box-shadow: 0px 0px 0px 2px #3498DB;background-color:#3498DB;border-radius:5px;border:2px solid #3498DB;display:inline-block;cursor:pointer;color:#ffffff;font-family:Arial;font-size:13px;padding:8px 25px;text-decoration:none;
     &:active {position:relative;top:1px;}}
     </style>""", unsafe_allow_html=True)
 
@@ -63,7 +84,11 @@ if uploaded_file is not None:
     submit_butt = st.sidebar.button('🚀 Run Analysis')
 
 st.sidebar.write('Step 3: Review the output in the main panel')
+
 st.sidebar.markdown("""---""")
+m_col1,m_col2 = st.sidebar.columns((1, 1))
+m_col1_but = m_col1.button('See Demo')
+m_col2_but = m_col2.button('Close Demo')
 
 # Main Panel
 c1, c2 = st.columns((2, 1))
@@ -89,11 +114,10 @@ with main_page.container():
         
     else:
         m_info = main_page_info.info('Awaiting the upload of the data template.')
-        m_col1,m_col2,t1 = main_page.columns((1, 1, 2))
+#         m_col1,m_col2,t1 = main_page.columns((1, 1, 2))
         
-        m_col1_but = m_col1.button('See Demo')
-        m_col2_but = m_col2.button('Close Demo')
-        
+#         m_col1_but = m_col1.button('See Demo')
+#         m_col2_but = m_col2.button('Close Demo')
         if m_col1_but:
             analysis(df_submit = None, run_demo = True, file_path = file_path, display_path = display_path, main_page = main_page, main_page_info = main_page_info)
             

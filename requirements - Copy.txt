@@ -1,6 +1,6 @@
 click==8.0.4
 streamlit
-plotly==4.14.3
+plotly==5.6.0
 base58==2.0.1
 pandas
 openpyxl
@@ -15,4 +15,3 @@ matplotlib
 seaborn
 streamlit-echarts
 hydralit_components
-pyrebase4
