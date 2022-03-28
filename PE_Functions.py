@@ -717,7 +717,7 @@ def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_
         
         # Display Overview
         main_page.markdown("""---""")
-        overview_1, overview_2 = main_page.columns((0.01, 10, 10))
+        overview_1, overview_2 = main_page.columns((0.01, 10))
         # overview_1.image('Picture/overview.jpg',use_column_width='auto')
         if r2>0.7:
             if female_pvalue>0.05:
