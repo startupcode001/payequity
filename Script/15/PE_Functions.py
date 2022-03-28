@@ -10,7 +10,6 @@ import seaborn as sns
 import plotly.graph_objects as go
 from streamlit_echarts import st_echarts
 import hydralit_components as hc
-from pathlib import Path
 
 from sklearn.preprocessing import StandardScaler,MinMaxScaler
 from sklearn.experimental import enable_iterative_imputer
@@ -44,12 +43,6 @@ from PE_Parameter import *
 #     df.columns = [c.strip().upper().replace('___', '_') for c in df.columns]
 #     df.columns = [c.strip().upper().replace('__', '_') for c in df.columns]
 #     return df
-# st.set_page_config(layout="wide")
-
-# Set Style
-# style_path = Path(__file__).parents[0].__str__()+'/Style/style.css'
-# with open(style_path) as f:
-#     st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
 def rename_column(df):
     df.columns = [c.strip().replace(' ', '_') for c in df.columns]
@@ -697,9 +690,9 @@ def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_
             message_budget_pv_overview = message_budget_pv
         else:
             if seek_budget_pv> 1000000:
-                message_budget_pv = str(locale.format("%.2f", round(seek_budget_pv/1000000,2), grouping=True))+' Million'+'\n'+'('+str(round(seek_adj_budget_pct_pv*100,0))+'% of Pay)'
+                message_budget_pv = str(locale.format("%.2f", round(seek_budget_pv/1000000,2), grouping=True))+' million'+'\n'+'('+str(round(seek_adj_budget_pct_pv*100,0))+'% of Pay)'
             else:
-                message_budget_pv = str(locale.format("%d", round(seek_budget_pv/1000,0), grouping=True))+' Thousand'+'\n'+'('+str(round(seek_adj_budget_pct_pv*100,0))+'% of Pay)'
+                message_budget_pv = str(locale.format("%d", round(seek_budget_pv/1000,0), grouping=True))+' thousand'+'\n'+'('+str(round(seek_adj_budget_pct_pv*100,0))+'% of Pay)'
             message_budget_pv_overview = "Raising women's pay by $"+message_budget_pv+' will reduce gap to ' + '-2.2%' + ' and become statistically insignificant.'
 
         message_budget_gap = np.nan
@@ -709,9 +702,9 @@ def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_
             message_budget_gap = 'No results found, please contact our consultant for more information.'
         else:
             if seek_budget_gap> 1000000:
-                message_budget_gap = str(locale.format("%.2f", round(seek_budget_gap/1000000,2), grouping=True))+' Million'+'\n'+'('+str(round(seek_adj_budget_pct_gap*100,2))+'% of Pay)'
+                message_budget_gap = str(locale.format("%.2f", round(seek_budget_gap/1000000,2), grouping=True))+'M'+'\n'+'('+str(round(seek_adj_budget_pct_gap*100,2))+'% of Pay)'
             else:
-                message_budget_gap = str(locale.format("%d", round(seek_budget_gap/1000,0), grouping=True))+' Thousand'+'\n'+'('+str(round(seek_adj_budget_pct_gap*100,2))+'% of Pay)'
+                message_budget_gap = str(locale.format("%d", round(seek_budget_gap/1000,0), grouping=True))+'K'+'\n'+'('+str(round(seek_adj_budget_pct_gap*100,2))+'% of Pay)'
 
         scenario = ['Current','A','B']
         action = ['🏁 No change','✔️ Mitigate legal risk \n'+'✔️ Reduce the gender gap to a statistical insignificant level.','✔️ Mitigate legal risk \n'+'✔️ Completely close gender gap \n'+'✔️ Become a market leader (Top 1%)\n']
@@ -758,9 +751,7 @@ def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_
         
         # Display Overview
         main_page.markdown("""---""")
-        overview_1, overview_2, overview_3,overview_4 = main_page.columns((1, 0.001, 0.001, 0.001))
-        overview_A1, overview_A2, overview_B1,overview_B2 = main_page.columns((1, 1, 1, 1))
-        
+        overview_1, overview_2, overview_3,overview_4 = main_page.columns((2, 0.001, 0.001, 0.001))
         # overview_1.image('Picture/overview.jpg',use_column_width='auto')
         if r2>0.7:
             if female_pvalue>0.05:
@@ -776,21 +767,14 @@ def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_
                     overview_1.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 150%; opacity: 0.7'>  Congratulation!  </h1>", unsafe_allow_html=True)
                     overview_1.markdown('You have a net gender pay gap of '+gender_gap_format+' and it is '+ gender_gap_stats + '. Your pay gap is at <font color=Green> **low** </font> legal risk. You are a <font color=Green> **market leader** </font> in gender pay equaity (Only 1% of companies have higher female earnings than men all else equal). We recommend periodic monitoring of the pay gap, for example before and after merit increases, mergers and acquisitions, organizational restructuring, and relevel of key jobs.', unsafe_allow_html=True)
                 else:
-                    # message = 'You have a net gender pay gap of '+gender_gap_format+' and it is '+ gender_gap_stats + '. This result poses a <font color=Orange> **high** </font> legal risk. You should consider to reducing it to a statistically insignificant level - See Scenario A below. An alternative is to consider closing the pay gap - see Scenario B below.'
-                    # overview_1.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Orange; font-size: 150%; opacity: 0.7'> ⚠️ Be mindful of legal risks  </h1>", unsafe_allow_html=True)
-                    # overview_1.markdown(message, unsafe_allow_html=True)
-                    
-                    message = 'You have a net gender pay gap of '+gender_gap_format+'. It is '+ gender_gap_stats + ' which can make you more prone to gender-related litigation. Consider to reducing it to a statistically insignificant level (Scenario A) or completely closing the gap (Scenario B).'
-                    with overview_1:
-                        hc.info_card(title='Watch out for legal risk', content=message, theme_override=get_hc_theme('warning'), key='main_message')
-                    with overview_A1:
-                        hc.info_card(title='Scenario A - Budget', content=message_budget_pv, theme_override=get_hc_theme('good'), key='A1')
-                    with overview_A2:
-                        hc.info_card(title='Scenario A - Result', content=net_gap[1], theme_override=get_hc_theme('good'), key='A2')
-                    with overview_B1:
-                        hc.info_card(title='Scenario B - Budget', content=message_budget_gap, theme_override=get_hc_theme('good'), key='B1')
-                    with overview_B2:
-                        hc.info_card(title='Scenario B - Result', content=net_gap[2], theme_override=get_hc_theme('good'), key='B2')
+                    message = 'You have a net gender pay gap of '+gender_gap_format+' and it is '+ gender_gap_stats + '. This result poses a <font color=Orange> **high** </font> legal risk. You should consider to reducing it to a statistically insignificant level - See Scenario A below. An alternative is to consider closing the pay gap - see Scenario B below.'
+                    # message = 'You have a net gender pay gap of '+gender_gap_format+' and it is '+ gender_gap_stats + ' which can make you more prone to gender-related litigation. You should consider to reducing it to a statistically insignificant level or completely closing the gap.'
+                    overview_1.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Orange; font-size: 150%; opacity: 0.7'> ⚠️ Be mindful of legal risks  </h1>", unsafe_allow_html=True)
+                    overview_1.markdown(message, unsafe_allow_html=True)
+                    # with overview_1:
+                    #     hc.info_card(title='Watch out for legal risk', content=message, theme_override=get_hc_theme('warning'))
+                    # with overview_2:
+                    #     hc.info_card(title='Scenario A', content=message_budget_pv_overview, theme_override=get_hc_theme('good'))
                     
         else:
             overview_1.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Orange; font-size: 150%; opacity: 0.7'> Contact Us </h1>", unsafe_allow_html=True)
