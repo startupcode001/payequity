@@ -14,3 +14,4 @@ matplotlib
 seaborn
 streamlit-echarts
 hydralit_components
+pyrebase4
