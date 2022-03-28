@@ -1,3 +1,4 @@
+click==8.0.4
 streamlit
 plotly==4.14.3
 base58==2.0.1
