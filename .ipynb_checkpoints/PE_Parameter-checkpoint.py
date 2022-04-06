@@ -15,7 +15,9 @@ def get_hc_theme(style):
     elif style == 'warning':
         output_theme = {'bgcolor': '#f9f9f9','title_color': 'orange','content_color': 'black','icon_color': 'orange', 'icon': 'fa fa-exclamation-circle'}
     elif style == 'good':
-        output_theme = {'font-size': '0.5rem','bgcolor': '#EFF8F7','title_color': 'green','content_color': 'black','icon_color': 'green', 'icon': 'fa fa-check-circle'}
+        # output_theme = {'font-size': '0.5rem','bgcolor': '#EFF8F7','title_color': 'green','content_color': 'black','icon_color': 'green', 'icon': 'fa fa-check-circle'}
+        output_theme = {'font-size': '0.5rem','bgcolor': '#EFF8F7','title_color': 'green','content_color': 'black','icon_color': 'green'}
+    
     else:
         output_theme = np.nan
     return output_theme

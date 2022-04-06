@@ -30,9 +30,9 @@ st.set_page_config(layout="wide")
 # demo_path = Path(__file__).parents[0].__str__()+'/Data/Pay Equity Demo.xlsx'
 file_path = Path(__file__).parents[0].__str__()+'/Data/Pay Equity Data Template.xlsx'
 display_path = Path(__file__).parents[0].__str__()+'/Data/Display Name.xlsx'
-style_path = Path(__file__).parents[0].__str__()+'/Style/style.css'
-with open(style_path) as f:
-    st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
+# style_path = Path(__file__).parents[0].__str__()+'/Style/style.css'
+# with open(style_path) as f:
+#     st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
 # Set Styles
 # metric = st.markdown("""
@@ -45,10 +45,10 @@ with open(style_path) as f:
 #         }
 #     </style>""", unsafe_allow_html=True)
 
-# info_card = st.markdown("""
-#     <style>
-#     div.css-21e425.e1tzin5v4 {font-size: 5px}
-#     </style>""", unsafe_allow_html=True)
+info_card = st.markdown("""
+    <style>
+    div.css-21e425.e1tzin5v4 {font-size: 5px}
+    </style>""", unsafe_allow_html=True)
 
 m = st.markdown("""
     <style>
