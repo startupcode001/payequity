@@ -8,6 +8,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import seaborn as sns
 import plotly.graph_objects as go
+import plotly.express as px
 from streamlit_echarts import st_echarts
 import hydralit_components as hc
 from pathlib import Path
@@ -66,6 +67,16 @@ def rename_column(df):
     df.columns = [c.strip().replace('__', '_') for c in df.columns]
     return df
 
+def gender_name_replace(text):
+    if ('F' in text):
+        return 'Female'
+    elif ('M' in text):
+        return 'Male'
+    elif ('N' in text):
+        return 'Non-Binary'
+    else:
+        return 'Unknown'
+
 def plot_eth_donut(data):
     # explosion    
     # plt.clf()
@@ -94,8 +105,7 @@ def plot_gender_donut(data):
     n_exp = len(data['GENDER_NAME'])
     explode = np.repeat(0.02, n_exp).tolist()
     explode = tuple(explode)
-    
-    data.to_excel('gender_check.xlsx')
+    # data.to_excel('gender_check.xlsx')
     
     # Pie Chart
     plt.pie(data['HC'],  labels=data['GENDER_NAME'],
@@ -111,6 +121,20 @@ def plot_gender_donut(data):
     # plt.figure(figsize=(500,500))
     # plt.show()
     return fig_gender
+
+def plot_bar(data,col):    
+    scale_max = round(data['COEF_DISPLAY'].max(),2)+0.02
+    scale_min = round(data['COEF_DISPLAY'].min(),2)-0.02
+    fig = px.bar(data, x=col, y="COEF_DISPLAY", color='STAT', template='seaborn', text=[f'{round(100*j,1)}%' for i,j in zip(data[col],data['COEF_DISPLAY'])])
+        
+    fig.update_layout(showlegend=False,autosize=False, margin=dict(l=10, r=10, t=10, b=10),yaxis_range=[scale_min,scale_max],paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
+    fig.update_yaxes(automargin=True, showticklabels=False, visible=False)
+    fig.update_xaxes(automargin=True, showticklabels=True, visible=True)
+    # fig.update_xaxes(automargin=True, showticklabels=True, visible=True)
+    # fig['layout']['yaxis'].update(autorange = True)s
+    # fig['layout']['xaxis'].update(autorange = True)
+    fig.update_traces(textfont_size=10, textangle=0, textposition="outside", cliponaxis=False)
+    return fig
 
 def clean_req_feature(data, feature, valid_feature_list, warning_message, data_type="string", 
                       val_col = 'VALIDATION_MESSAGE',val_flag_col = 'VALIDATION_FLAG'):
@@ -236,7 +260,7 @@ def run(data=None, df_gender_name=None):
         
     # 2.2 Clean up All features ******************
     df,warning_message = clean_req_feature(data = df,feature = "EEID",valid_feature_list=[],warning_message = warning_message, data_type="string")
-    df,warning_message = clean_req_feature(data = df,feature = "GENDER",valid_feature_list=["F","M","N","O"],warning_message = warning_message, data_type="string")
+    df,warning_message = clean_req_feature(data = df,feature = "GENDER",valid_feature_list=["F","M","N","U","O"],warning_message = warning_message, data_type="string")
     df,warning_message = clean_req_feature(data = df,feature = "SALARY",valid_feature_list=[],warning_message = warning_message, data_type='numeric')
     df,warning_message = clean_req_feature(data = df,feature = "JOB_LEVEL_OR_COMP_GRADE",valid_feature_list=[],warning_message = warning_message, data_type="string")
     df,warning_message = clean_req_feature(data = df,feature = "JOB_FUNCTION",valid_feature_list=[],warning_message = warning_message,data_type="string")
@@ -317,6 +341,16 @@ def run(data=None, df_gender_name=None):
     if 'TENURE' not in col_list:
         numeric_columns.remove('TENURE')
     
+    # Include customized columns
+    numeric_columns_customized = []
+    for i, row in df_type.iterrows():
+        if row['TYPE'] == 'numeric':
+            numeric_columns_customized.append(row['COL_NAME'])
+    
+    numeric_columns_customized_include = [x for x in numeric_columns_customized if x in include_feature]
+    numeric_columns.extend(numeric_columns_customized_include)
+    numeric_columns = list(set(numeric_columns))
+    
     for c in numeric_columns:
         df.loc[df[c]=='na', c] = np.nan
         df[c] = pd.to_numeric(df[c])
@@ -325,6 +359,7 @@ def run(data=None, df_gender_name=None):
     
     # %% Convert string columns to categories
     category_columns = [x for x in col_list if x not in numeric_columns]
+    print(category_columns)
     for c in category_columns:
         df[c] = df[c].astype(str).str.strip().astype('category')
     
@@ -349,7 +384,7 @@ def run(data=None, df_gender_name=None):
     print('\n')
     print(df_baseline.to_markdown())
     
-    # 3 Modeling - Linear Regression ****************************
+    # 3 Gender Modeling - Linear Regression ****************************
     col_list = df.columns
     
     # Remove all excess columns
@@ -400,6 +435,9 @@ def run(data=None, df_gender_name=None):
     female_coff = df_result.loc[df_result['CONTENT']=="GENDER[T.F]"]['Coef.'].tolist()[0]
     female_pvalue = df_result.loc[df_result['CONTENT']=="GENDER[T.F]"]['P>|t|'].tolist()[0]
     
+    nonb_coff = df_result.loc[df_result['CONTENT']=="GENDER[T.N]"]['Coef.'].tolist()[0]
+    nonb_pvalue = df_result.loc[df_result['CONTENT']=="GENDER[T.N]"]['P>|t|'].tolist()[0]
+    
     # Gender Net Gap - Prediciton
     y_predict, x_predict = dmatrices(f_predict, df, return_type='dataframe')
     model_predict = sm.OLS(y_predict, x_predict)
@@ -425,6 +463,47 @@ def run(data=None, df_gender_name=None):
     hc_female = df[(df['GENDER']=='F') | (df['GENDER']=='FEMALE')].shape[0]
     
     avg_pay = df['SALARY'].mean()
+    
+    # Result Table
+    df_result.to_excel('result_regression.xlsx')
+    
+    df_result_gender = df_result[df_result['CONTENT'].str.contains("GENDER")==True]
+    df_result_gender = df_result_gender[['CONTENT','Coef.','P>|t|']]
+    df_result_gender.columns = ['CONTENT','COEF','PVALUE']
+    df_result_gender['GENDER'] = df_result_gender['CONTENT']
+    df_result_gender['GENDER'] = df_result_gender['GENDER'].str.replace("[","")
+    df_result_gender['GENDER'] = df_result_gender['GENDER'].str.replace("]","")
+    df_result_gender['GENDER'] = df_result_gender['GENDER'].str.split('.').str[-1]
+    df_result_gender = df_result_gender.drop(columns=['CONTENT'])
+    df_result_gender['COEF_DISPLAY'] = df_result_gender['COEF']
+    df_result_gender['STAT'] = "No"
+    df_result_gender.loc[df_result_gender['PVALUE']<=0.05,"STAT"] = "Yes"
+    df_result_gender = df_result_gender.sort_values(by=['COEF_DISPLAY'], ascending=False)
+    baseline_row = pd.DataFrame({'GENDER':'M', 'COEF':0, 'COEF_DISPLAY':0,'PVALUE':1,'STAT':"No"},index =[0])
+    df_result_gender = pd.concat([baseline_row, df_result_gender[:]]).reset_index(drop = True)
+    df_result_gender['GENDER'] = df_result_gender.apply(lambda x: gender_name_replace(text=x['GENDER']),axis=1)
+    df_result_gender.to_excel('result_gender.xlsx')
+    fig_gender_bar = plot_bar(df_result_gender,'GENDER')
+    
+    df_result_eth = df_result[df_result['CONTENT'].str.contains("ETHNICITY")==True]
+    df_result_eth = df_result_eth[['CONTENT','Coef.','P>|t|']]
+    df_result_eth.columns = ['CONTENT','COEF','PVALUE']
+    df_result_eth['ETHNICITY'] = df_result_eth['CONTENT']
+    df_result_eth['COEF_DISPLAY'] = df_result_eth['COEF']
+    df_result_eth['STAT'] = "No"
+    df_result_eth.loc[df_result_eth['PVALUE']<=0.05,"STAT"] = "Yes"
+    df_result_eth = df_result_eth.sort_values(by=['COEF_DISPLAY'], ascending=False)
+    df_result_eth['ETHNICITY'] = df_result_eth['ETHNICITY'].str.replace("[","")
+    df_result_eth['ETHNICITY'] = df_result_eth['ETHNICITY'].str.replace("]","")
+    df_result_eth['ETHNICITY'] = df_result_eth['ETHNICITY'].str.split('.').str[-1]
+    df_result_eth = df_result_eth.drop(columns=['CONTENT'])
+    baseline_eth = df['ETHNICITY'].value_counts()
+    # baseline_eth.to_excel('baseline_eth.xlsx')
+    # print(baseline_eth.index[0])
+    baseline_row = pd.DataFrame({'ETHNICITY':baseline_eth.index[0], 'COEF':0, 'COEF_DISPLAY':0,'PVALUE':1,'STAT':"No"},index =[0])
+    df_result_eth = pd.concat([baseline_row, df_result_eth[:]]).reset_index(drop = True)
+    df_result_eth.to_excel('result_eth.xlsx')
+    fig_eth_bar = plot_bar(df_result_eth,'ETHNICITY')
     
     # Gender Table
     df_gender = df.pivot_table(index=['GENDER'],values=['EEID','SALARY'],aggfunc={'EEID':'count','SALARY':'mean'},fill_value=np.nan)
@@ -463,7 +542,8 @@ def run(data=None, df_gender_name=None):
     # df.to_excel('gender.xlsx')
     # print(message.loc[['OVERVIEW']]['Message'])
     
-    return df, df_org, df_validation, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2, female_coff, female_pvalue, before_clean_record, after_clean_record,hc_female,X_full,budget_df,exclude_feature, include_feature,df_gender, df_eth, fig_gender_hc,fig_eth_hc, avg_pay, gender_female_pay, gender_nonb_pay, eth_minor_pay
+    return df, df_org, df_validation, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2, female_coff, female_pvalue, before_clean_record, after_clean_record,hc_female,X_full,budget_df,exclude_feature, include_feature,df_gender, df_eth, fig_gender_hc,fig_eth_hc, avg_pay, gender_female_pay, gender_nonb_pay, eth_minor_pay,fig_gender_bar, fig_eth_bar
+# , fig_gender_bar
 
 def reme(df,budget_df,X_full,factor, project_group_feature, protect_group_class):
     budget_df['adj_lower'] = budget_df['predicted'] - factor * budget_df['pred_stderr']
@@ -661,8 +741,9 @@ def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_
         
         # Run discovery model:
         m_info = main_page_info.success('Running Gap Analysis')
-        df, df_org,  df_validation, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2, female_coff, female_pvalue, before_clean_record, after_clean_record,hc_female,X_full,budget_df,exclude_feature, include_feature,df_gender,df_eth,fig_gender_hc,fig_eth_hc,avg_pay, gender_female_pay, gender_nonb_pay, eth_minor_pay = run(df,df_gender_name)     
+        df, df_org,  df_validation, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2, female_coff, female_pvalue, before_clean_record, after_clean_record,hc_female,X_full,budget_df,exclude_feature, include_feature,df_gender,df_eth,fig_gender_hc,fig_eth_hc,avg_pay, gender_female_pay, gender_nonb_pay, eth_minor_pay,fig_gender_bar, fig_eth_bar = run(df,df_gender_name)     
         
+        # , fig_gender_bar
         # ,fig_eth_hc
         print('pvalue'+str(female_pvalue))
         gender_gap_format = str(round(female_coff*100,0))+'%'
@@ -774,46 +855,46 @@ def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_
         m_info = main_page_info.success('View Result: '+message.loc[['OVERVIEW']][0])
         
         # Display Overview
-        main_page.markdown("""---""")
-        overview_1, overview_2, overview_3,overview_4 = main_page.columns((1, 0.001, 0.001, 0.001))
-        overview_A1, overview_A2, overview_B1,overview_B2 = main_page.columns((1, 1, 1, 1))
+#         main_page.markdown("""---""")
+#         overview_1, overview_2, overview_3,overview_4 = main_page.columns((1, 0.001, 0.001, 0.001))
+#         overview_A1, overview_A2, overview_B1,overview_B2 = main_page.columns((1, 1, 1, 1))
         
-        # overview_1.image('Picture/overview.jpg',use_column_width='auto')
-        if r2>0.7:
-            if female_pvalue>0.05:
-                overview_1.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 150%; opacity: 0.7'>  Congratulation!  </h1>", unsafe_allow_html=True)
-                if female_coff<-0.05:
-                    overview_1.markdown('You have a net gender pay gap of '+gender_gap_format+' and it is '+ gender_gap_stats + '. Your pay gap presents a <font color=Green> **low** </font> legal risk. However, you have a <font color=Orange> **larger** </font> gap than the market. A larger negative gap generally results in a statistically significant status which increases legal risk in the long run. As a precaution, you can routinely repeat this analysis to monitor the pay gap. An alternative is to consider closing the pay gap - see Scenario B below.', unsafe_allow_html=True)                    
-                elif female_coff>=-0.05 and female_coff<0:
-                    overview_1.markdown('You have a net gender pay gap of '+gender_gap_format+' and it is '+ gender_gap_stats + '. Your pay gap is at <font color=Green> **low** </font> legal risk. You are also in alignment with the market! We recommend periodic monitoring of the pay gap, for example before and after merit increases, mergers and acquisitions, organizational restructuring, and relevel of key jobs. An alternative is to consider closing the pay gap - see Scenario B below.', unsafe_allow_html=True)
-                else:
-                    overview_1.markdown('You have a net gender pay gap of '+gender_gap_format+' and it is '+ gender_gap_stats + '. Your pay gap is at <font color=Green> **low** </font> legal risk. You are a <font color=Green> **market leader** </font> in gender pay equaity (Only 1% of companies have higher female earnings than men all else equal). We recommend periodic monitoring of the pay gap, for example before and after merit increases, mergers and acquisitions, organizational restructuring, and relevel of key jobs.', unsafe_allow_html=True)
-            else:
-                if female_coff>0:
-                    overview_1.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 150%; opacity: 0.7'>  Congratulation!  </h1>", unsafe_allow_html=True)
-                    overview_1.markdown('You have a net gender pay gap of '+gender_gap_format+' and it is '+ gender_gap_stats + '. Your pay gap is at <font color=Green> **low** </font> legal risk. You are a <font color=Green> **market leader** </font> in gender pay equaity (Only 1% of companies have higher female earnings than men all else equal). We recommend periodic monitoring of the pay gap, for example before and after merit increases, mergers and acquisitions, organizational restructuring, and relevel of key jobs.', unsafe_allow_html=True)
-                else:
-                    message = 'You have a net gender pay gap of '+gender_gap_format+' and it is '+ gender_gap_stats + '. This result poses a <font color=Orange> **high** </font> legal risk. You should consider to reducing it to a statistically insignificant level - See Scenario A below. An alternative is to consider closing the pay gap - see Scenario B below.'
-                    # overview_1.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Orange; font-size: 150%; opacity: 0.7'> ⚠️ Be mindful of legal risks  </h1>", unsafe_allow_html=True)
-                    overview_1.markdown(message, unsafe_allow_html=True)
+#         # overview_1.image('Picture/overview.jpg',use_column_width='auto')
+#         if r2>0.7:
+#             if female_pvalue>0.05:
+#                 overview_1.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 150%; opacity: 0.7'>  Congratulation!  </h1>", unsafe_allow_html=True)
+#                 if female_coff<-0.05:
+#                     overview_1.markdown('You have a net gender pay gap of '+gender_gap_format+' and it is '+ gender_gap_stats + '. Your pay gap presents a <font color=Green> **low** </font> legal risk. However, you have a <font color=Orange> **larger** </font> gap than the market. A larger negative gap generally results in a statistically significant status which increases legal risk in the long run. As a precaution, you can routinely repeat this analysis to monitor the pay gap. An alternative is to consider closing the pay gap - see Scenario B below.', unsafe_allow_html=True)                    
+#                 elif female_coff>=-0.05 and female_coff<0:
+#                     overview_1.markdown('You have a net gender pay gap of '+gender_gap_format+' and it is '+ gender_gap_stats + '. Your pay gap is at <font color=Green> **low** </font> legal risk. You are also in alignment with the market! We recommend periodic monitoring of the pay gap, for example before and after merit increases, mergers and acquisitions, organizational restructuring, and relevel of key jobs. An alternative is to consider closing the pay gap - see Scenario B below.', unsafe_allow_html=True)
+#                 else:
+#                     overview_1.markdown('You have a net gender pay gap of '+gender_gap_format+' and it is '+ gender_gap_stats + '. Your pay gap is at <font color=Green> **low** </font> legal risk. You are a <font color=Green> **market leader** </font> in gender pay equaity (Only 1% of companies have higher female earnings than men all else equal). We recommend periodic monitoring of the pay gap, for example before and after merit increases, mergers and acquisitions, organizational restructuring, and relevel of key jobs.', unsafe_allow_html=True)
+#             else:
+#                 if female_coff>0:
+#                     overview_1.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 150%; opacity: 0.7'>  Congratulation!  </h1>", unsafe_allow_html=True)
+#                     overview_1.markdown('You have a net gender pay gap of '+gender_gap_format+' and it is '+ gender_gap_stats + '. Your pay gap is at <font color=Green> **low** </font> legal risk. You are a <font color=Green> **market leader** </font> in gender pay equaity (Only 1% of companies have higher female earnings than men all else equal). We recommend periodic monitoring of the pay gap, for example before and after merit increases, mergers and acquisitions, organizational restructuring, and relevel of key jobs.', unsafe_allow_html=True)
+#                 else:
+#                     message = 'You have a net gender pay gap of '+gender_gap_format+' and it is '+ gender_gap_stats + '. This result poses a <font color=Orange> **high** </font> legal risk. You should consider to reducing it to a statistically insignificant level - See Scenario A below. An alternative is to consider closing the pay gap - see Scenario B below.'
+#                     # overview_1.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Orange; font-size: 150%; opacity: 0.7'> ⚠️ Be mindful of legal risks  </h1>", unsafe_allow_html=True)
+#                     overview_1.markdown(message, unsafe_allow_html=True)
                     
-                    # message = 'You have a net gender pay gap of '+gender_gap_format+'. It is '+ gender_gap_stats + ' which can make you more prone to gender-related litigation. Consider to reducing it to a statistically insignificant level (Scenario A) or completely closing the gap (Scenario B).'
-                    # with overview_1:
-                    #     hc.info_card(title='Watch out for legal risk', content=message, theme_override=get_hc_theme('warning'), key='main_message')
-                    # with overview_A1:
-                    #     hc.info_card(title='Scenario A - Budget', content=message_budget_pv, theme_override=get_hc_theme('good'), key='A1')
-                    # with overview_A2:
-                    #     hc.info_card(title='Scenario A - Result', content=net_gap[1], theme_override=get_hc_theme('good'), key='A2')
-                    # with overview_B1:
-                    #     hc.info_card(title='Scenario B - Budget', content=message_budget_gap, theme_override=get_hc_theme('good'), key='B1')
-                    # with overview_B2:
-                    #     hc.info_card(title='Scenario B - Result', content=net_gap[2], theme_override=get_hc_theme('good'), key='B2')
+#                     # message = 'You have a net gender pay gap of '+gender_gap_format+'. It is '+ gender_gap_stats + ' which can make you more prone to gender-related litigation. Consider to reducing it to a statistically insignificant level (Scenario A) or completely closing the gap (Scenario B).'
+#                     # with overview_1:
+#                     #     hc.info_card(title='Watch out for legal risk', content=message, theme_override=get_hc_theme('warning'), key='main_message')
+#                     # with overview_A1:
+#                     #     hc.info_card(title='Scenario A - Budget', content=message_budget_pv, theme_override=get_hc_theme('good'), key='A1')
+#                     # with overview_A2:
+#                     #     hc.info_card(title='Scenario A - Result', content=net_gap[1], theme_override=get_hc_theme('good'), key='A2')
+#                     # with overview_B1:
+#                     #     hc.info_card(title='Scenario B - Budget', content=message_budget_gap, theme_override=get_hc_theme('good'), key='B1')
+#                     # with overview_B2:
+#                     #     hc.info_card(title='Scenario B - Result', content=net_gap[2], theme_override=get_hc_theme('good'), key='B2')
                     
-        else:
-            overview_1.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Orange; font-size: 150%; opacity: 0.7'> Contact Us </h1>", unsafe_allow_html=True)
-            overview_1.markdown('The default pay drivers are <font color=Orange> **not sufficient** </font> to account for the variation of wages between employees. To improve the model robustness, you may include additional pay drivers such as high potential, cost centre, skills and so on in the template. Please contact us for a free consultation if you are not sure.', unsafe_allow_html=True)            
-            main_page.markdown("""---""")
-            st.stop()
+#         else:
+#             overview_1.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Orange; font-size: 150%; opacity: 0.7'> Contact Us </h1>", unsafe_allow_html=True)
+#             overview_1.markdown('The default pay drivers are <font color=Orange> **not sufficient** </font> to account for the variation of wages between employees. To improve the model robustness, you may include additional pay drivers such as high potential, cost centre, skills and so on in the template. Please contact us for a free consultation if you are not sure.', unsafe_allow_html=True)            
+#             main_page.markdown("""---""")
+#             st.stop()
             
         main_page.markdown("""---""")
         m_col1_but_col1, m_col1_but_col2, m_col1_but_col3, m_col1_but_col4 = main_page.columns((0.5, 0.5, 1 , 1))
@@ -863,19 +944,27 @@ def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_
         m_col1_but_col4.markdown("<h1 style='text-align: center; vertical-align: top; font-size: 100%'>Ethnicity Distribution</h1>", unsafe_allow_html=True)
         m_col1_but_col4.pyplot(fig_eth_hc)
             
-        main_page.markdown("""---""")
+        # main_page.markdown("""---""")
         
-        inc_col, exc_col = main_page.columns((1, 1))
-        inc_col.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 110%; opacity: 0.7'> ✔️ Pay drivers included:  </h1>", unsafe_allow_html=True)
-        inc_col.markdown(include_feature_text, unsafe_allow_html=True)       
-        exc_col.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Orange; font-size: 110%; opacity: 0.7'> ⚠️ Pay drivers excluded:  </h1>", unsafe_allow_html=True)        
-        exc_col.markdown(exclude_feature_text, unsafe_allow_html=True)
+        # main_page.pyplot(fig_gender_hc)
+#         test1, test2, test3 = main_page.columns((1, 1, 1))
+        
+#         test1.plotly_chart(fig_gender_bar, use_container_width=True)
+        
+        # main_page.markdown("""---""")
+        
+        with st.expander("What pay drivers are supplied:"):
+            inc_col, exc_col = st.columns((1, 1))
+            inc_col.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 110%; opacity: 0.7'> ✔️ Pay drivers you supplied:  </h1>", unsafe_allow_html=True)
+            inc_col.markdown(include_feature_text, unsafe_allow_html=True)       
+            exc_col.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Orange; font-size: 110%; opacity: 0.7'> ⚠️ Pay drivers you haven't supplied:  </h1>", unsafe_allow_html=True)        
+            exc_col.markdown(exclude_feature_text, unsafe_allow_html=True)
         
         # r2= 0.9
         
         # Show R2
         main_page.markdown("""---""")
-        metric_R2_1, metric_R2_2, metric_R2_3 = main_page.columns((1, 1.7, 1.7))            
+        metric_R2_1, metric_R2_2, metric_R2_3 = main_page.columns((1, 1.25, 1.25))            
         metric_R2_1.markdown("<h1 style='text-align: left; vertical-align: bottom; font-size: 150%; color: #3498DB; opacity: 0.7'>Robustness</h1>", unsafe_allow_html=True)
         # metric_R2_1.plotly_chart(fig_r2_gender_gap, use_container_width=True)
         with metric_R2_1:
@@ -894,19 +983,28 @@ def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_
             st.stop()
         # metric_R2_3.markdown("<h1 style='text-align: center; vertical-align: bottom; color: Black; background-color: #3498DB; opacity: 0.7; border-style: dotted'>Observation</h1>", unsafe_allow_html=True)
         
-        # Show Net Gap
+        # Show Gender Gap
         main_page.markdown("""---""")
-        metric_net_gap_1, metric_net_gap_2, metric_net_gap_3 = main_page.columns((1, 1.6, 1.6))            
-        metric_net_gap_1.markdown("<h1 style='text-align: left; vertical-align: bottom; font-size: 150%; color: #3498DB; opacity: 0.7'>Net Gender Gap</h1>", unsafe_allow_html=True)
+        metric_net_gap_1, metric_net_gap_2, metric_net_gap_3 = main_page.columns((1, 1.25, 1.25))            
+        metric_net_gap_1.markdown("<h1 style='text-align: left; vertical-align: bottom; font-size: 150%; color: #3498DB; opacity: 0.7'> Gender Gap </h1>", unsafe_allow_html=True)
+        # metric_net_gap_1.markdown('<font color=Orange> **Red** </font>'+' bar indicates statisical significant finding', unsafe_allow_html=True)
+        # metric_net_gap_1.markdown('For every $100 made by male', unsafe_allow_html=True)
         # metric_net_gap_1.plotly_chart(fig_net_gender_gap, use_container_width=True)
-        with metric_net_gap_1:
-            gender_gap_options = get_gender_gap_option(female_coff)
-            st_echarts(options=gender_gap_options,height="200px")
+        metric_net_gap_1.plotly_chart(fig_gender_bar, use_container_width=True)
+        # metric_net_gap_1.plotly_chart(fig_eth_bar, use_container_width=True)
+       
+        # with metric_net_gap_1:
+        #     gender_gap_options = get_gender_gap_option(female_coff)
+        #     st_echarts(options=gender_gap_options,height="200px")
         metric_net_gap_2.markdown("<h1 style='text-align: left; vertical-align: bottom;color: #3498DB; font-size: 150%; opacity: 0.7'>Benchmark</h1>", unsafe_allow_html=True)
-        metric_net_gap_2.write("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 110%; opacity: 0.7'> 🌐 > -5% </h1>" "For each dollar paid to male employees, how much (less) or more goes to female employees. For example -3% means that on average women are paid 3% LESS compared to men. Overall, the U.S. net gender gap is between -5% and +1%.", unsafe_allow_html=True)
+        
+        metric_net_gap_2.write("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 110%; opacity: 0.7'> 🌐 > -5% </h1>" "For example pay gap at -10% means that on average women are paid 10% less compared to men. In US, female gender gap is between -5% and +1%.", unsafe_allow_html=True)
+        metric_net_gap_2.write('#')
+        metric_net_gap_2.write('<font color=Orange> **Red** </font>'+' bar means the pay gap is statistical significant.  A significant gender pay gap indicates over 95% certain that gap exists after incorporates all of the legitimate determinants of pay (such as differences of skill, effort, and responsibility). From a legal perspective, it is accepted by courts to justify gender pay discrimination. In contrast, courts have dismissed claims under the Equal Pay Act when the evidence shows no statistical significance discrimination.', unsafe_allow_html=True)
+        
+        # metric_net_gap_2.markdown('<font color=Orange> **Red** </font>'+' bar indicates statisical significant finding', unsafe_allow_html=True)
 
         metric_net_gap_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: #3498DB; font-size: 150%; opacity: 0.7'>Observation</h1>", unsafe_allow_html=True)
-        
 #         female_pvalue = 0.04
 #         female_coff = 0.02
         
@@ -933,6 +1031,55 @@ def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_
                 metric_net_gap_3.markdown('The gender gap is **statistically significant**, which can make you more prone to gender-related litigation.', unsafe_allow_html=True)
                 metric_net_gap_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Orange; font-size: 110%; opacity: 0.7'> ⚠️ Pay Gap - Below market  </h1>", unsafe_allow_html=True)
                 metric_net_gap_3.markdown("You may consider reducing the pay gap to a statistically insignificant level to reduce legal risk", unsafe_allow_html=True)
+                
+        # Show Ethnicity Gap
+        main_page.markdown("""---""")
+        metric_eth_gap_1, metric_eth_gap_2, metric_eth_gap_3 = main_page.columns((1, 1.25, 1.25))            
+        metric_eth_gap_1.markdown("<h1 style='text-align: left; vertical-align: bottom; font-size: 150%; color: #3498DB; opacity: 0.7'> Ethnicity Gap </h1>", unsafe_allow_html=True)
+        # metric_net_gap_1.markdown('<font color=Orange> **Red** </font>'+' bar indicates statisical significant finding', unsafe_allow_html=True)
+        # metric_net_gap_1.markdown('For every $100 made by male', unsafe_allow_html=True)
+        # metric_net_gap_1.plotly_chart(fig_net_gender_gap, use_container_width=True)
+        metric_eth_gap_1.plotly_chart(fig_eth_bar, use_container_width=True)
+        # metric_net_gap_1.plotly_chart(fig_eth_bar, use_container_width=True)
+       
+        # with metric_net_gap_1:
+        #     gender_gap_options = get_gender_gap_option(female_coff)
+        #     st_echarts(options=gender_gap_options,height="200px")
+        metric_eth_gap_2.markdown("<h1 style='text-align: left; vertical-align: bottom;color: #3498DB; font-size: 150%; opacity: 0.7'>Benchmark</h1>", unsafe_allow_html=True)
+        
+        metric_eth_gap_2.write("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 110%; opacity: 0.7'> 🌐 > -10% </h1>" "For example pay gap at -10% means that on average black are paid 10% less compared to white. In US, ethnicity gender gap varies between -10% and +5%.", unsafe_allow_html=True)
+        metric_eth_gap_2.write('#')
+        metric_eth_gap_2.write('<font color=Orange> **Red** </font>'+' bar means the pay gap is statistical significant.  A significant ethnicity pay gap indicates over 95% certain that gap exists after incorporates all of the legitimate determinants of pay (such as differences of skill, effort, and responsibility). From a legal perspective, it is accepted by courts to justify ethnicity pay discrimination. In contrast, courts have dismissed claims under the Equal Pay Act when the evidence shows no statistical significance discrimination.', unsafe_allow_html=True)
+        
+        # metric_net_gap_2.markdown('<font color=Orange> **Red** </font>'+' bar indicates statisical significant finding', unsafe_allow_html=True)
+
+        metric_eth_gap_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: #3498DB; font-size: 150%; opacity: 0.7'>Observation</h1>", unsafe_allow_html=True)
+#         female_pvalue = 0.04
+#         female_coff = 0.02
+        
+        print(female_coff)
+        print(female_pvalue)
+        if female_pvalue>0.05:
+            metric_eth_gap_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 110%; opacity: 0.7'> ✔️ Legal Risk - Low </h1>", unsafe_allow_html=True)
+            metric_eth_gap_3.markdown("Congratulation! The gender gap is statistically insignificant, meaning that your legal risk is mimumum and defensible on strong statistical grounds.", unsafe_allow_html=True)
+            if female_coff<-0.05:
+                metric_eth_gap_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Orange; font-size: 110%; opacity: 0.7'> ⚠️ Pay Gap - Below market  </h1>", unsafe_allow_html=True)
+                metric_eth_gap_3.markdown("You have a larger pay gap than the market. A larger negative gap generally results in a statistically significant status which increases legal risk. As a precaution, you can routinely repeat this analysis to monitor the pay gap. An alternative is to consider closing the pay gap", unsafe_allow_html=True)    
+            elif female_coff>=-0.05 and female_coff<0:
+                metric_eth_gap_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 110%; opacity: 0.7'> ✔️ Pay Gap - Align with market  </h1>", unsafe_allow_html=True)
+                metric_eth_gap_3.markdown('You are in alignment with the market! To be the market leader, you can consider narrowing the gap to 0%.', unsafe_allow_html=True)
+            else:
+                metric_eth_gap_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 110%; opacity: 0.7'> ✔️ Pay Gap - Market leader!  </h1>", unsafe_allow_html=True)
+                metric_eth_gap_3.markdown("Congratulation! Your female employees earn in average more than men. Only 1% of companies have reached your great standing!", unsafe_allow_html=True)
+        else:
+            if female_coff>0:
+                metric_eth_gap_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 110%; opacity: 0.7'> ✔️ Legal Risk - Low </h1>", unsafe_allow_html=True)
+                metric_eth_gap_3.markdown("Congratulation! Your female employees earn in average more than men. Only 1% of companies have reached your great standing!", unsafe_allow_html=True)
+            else:
+                metric_eth_gap_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Orange; font-size: 110%; opacity: 0.7'> ⚠️ Legal Risk - High </h1>", unsafe_allow_html=True)
+                metric_eth_gap_3.markdown('The gender gap is **statistically significant**, which can make you more prone to gender-related litigation.', unsafe_allow_html=True)
+                metric_eth_gap_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Orange; font-size: 110%; opacity: 0.7'> ⚠️ Pay Gap - Below market  </h1>", unsafe_allow_html=True)
+                metric_eth_gap_3.markdown("You may consider reducing the pay gap to a statistically insignificant level to reduce legal risk", unsafe_allow_html=True)
 
         # Remediation Scenarios
         main_page.markdown("""---""")

@@ -94,7 +94,7 @@ m_col2_but = m_col2.button('Close Demo')
 c1, c2 = st.columns((2, 1))
 c2.image('Picture/salary.jpeg',use_column_width='auto')
 c1.title('PayX')
-c1.write('PayX measure the value and the statistical significance of the **net gender/ethnicity pay gap**. That is, we compare pay between men and women, between white and black with similar level, function, location, experience and performance, etc to ensure the difference is gender/ethnicity based. Statistical significance allows us to quantify if a gap is due to chance or gender/ethnicity bias.')
+c1.write('PayX measure the value and the statistical significance of the **net gender pay gap**. That is, we compare pay between men and women with similar level, function, location, experience and performance, etc to ensure the difference is gender-based. Statistical significance allows us to quantify if a gap is due to chance or gender bias.')
 
 # st.markdown("""---""")
 
