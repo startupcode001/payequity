@@ -1000,7 +1000,7 @@ def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_
         
         metric_net_gap_2.write("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 110%; opacity: 0.7'> 🌐 > -5% </h1>" "For example pay gap at -10% means that on average women are paid 10% less compared to men. In US, female gender gap is between -5% and +1%.", unsafe_allow_html=True)
         metric_net_gap_2.write('#')
-        metric_net_gap_2.write('<font color=Orange> **Red** </font>'+' bar means the pay gap is statistical significant.  A significant gender pay gap indicates over 95% certain that gap exists after incorporates all of the legitimate determinants of pay (such as differences of skill, effort, and responsibility). From a legal perspective, it is accepted by courts to justify gender pay discrimination. In contrast, courts have dismissed claims under the Equal Pay Act when the evidence shows no statistical significance discrimination.', unsafe_allow_html=True)
+        metric_net_gap_2.write('<font color=Orange> **Red** </font>'+' bar means the pay gap is statistical significant.  A significant gender pay gap indicates over 95% certain that gap exists after incorporates all of the legitimate determinants of pay (such as differences of skill, effort, and responsibility). From a legal perspective, it is used by courts to justify gender pay discrimination.', unsafe_allow_html=True)
         
         # metric_net_gap_2.markdown('<font color=Orange> **Red** </font>'+' bar indicates statisical significant finding', unsafe_allow_html=True)
 
@@ -1049,7 +1049,7 @@ def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_
         
         metric_eth_gap_2.write("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 110%; opacity: 0.7'> 🌐 > -10% </h1>" "For example pay gap at -10% means that on average black are paid 10% less compared to white. In US, ethnicity gender gap varies between -10% and +5%.", unsafe_allow_html=True)
         metric_eth_gap_2.write('#')
-        metric_eth_gap_2.write('<font color=Orange> **Red** </font>'+' bar means the pay gap is statistical significant.  A significant ethnicity pay gap indicates over 95% certain that gap exists after incorporates all of the legitimate determinants of pay (such as differences of skill, effort, and responsibility). From a legal perspective, it is accepted by courts to justify ethnicity pay discrimination. In contrast, courts have dismissed claims under the Equal Pay Act when the evidence shows no statistical significance discrimination.', unsafe_allow_html=True)
+        metric_eth_gap_2.write('<font color=Orange> **Red** </font>'+' bar means the pay gap is statistical significant.  A significant ethnicity pay gap indicates over 95% certain that gap exists after incorporates all of the legitimate determinants of pay (such as differences of skill, effort, and responsibility). From a legal perspective, it is used by courts to justify ethnicity pay discrimination.', unsafe_allow_html=True)
         
         # metric_net_gap_2.markdown('<font color=Orange> **Red** </font>'+' bar indicates statisical significant finding', unsafe_allow_html=True)
 
