@@ -1002,7 +1002,7 @@ def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_
         #     st_echarts(options=gender_gap_options,height="200px")
         metric_net_gap_2.markdown("<h1 style='text-align: left; vertical-align: bottom;color: #3498DB; font-size: 150%; opacity: 0.7'>Benchmark</h1>", unsafe_allow_html=True)
         
-        metric_net_gap_2.write("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 110%; opacity: 0.7'> 🌐 > -5% </h1>" "Pay gap measures for every dollar paid to male employees, how much (less) or more goes to non-male employees. For example pay gap at -10% means that on average women are paid 10% less compared to men all else equal. In US, gender gap typically ranges between -5% and +1%.", unsafe_allow_html=True)
+        metric_net_gap_2.write("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 110%; opacity: 0.7'> 🌐 > -5% </h1>" "For example pay gap at -10% means that on average women are paid 10% less compared to men all else equal. In US, gender gap typically ranges between -5% and +1%.", unsafe_allow_html=True)
         # metric_net_gap_2.write('#')
         metric_net_gap_2.write('<font color=Orange> **Red** </font>'+' bar means the pay gap is statistical significant.  A significant gender pay gap indicates over 95% certain that gap exists after incorporates all of the legitimate determinants of pay (such as differences of skill, effort, and responsibility). From a legal perspective, it is used by courts to justify gender pay discrimination.', unsafe_allow_html=True)
         

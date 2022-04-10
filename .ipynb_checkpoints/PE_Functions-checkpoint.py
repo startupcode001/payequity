@@ -482,6 +482,7 @@ def run(data=None, df_gender_name=None):
     baseline_row = pd.DataFrame({'GENDER':'M', 'COEF':0, 'COEF_DISPLAY':0,'PVALUE':1,'STAT':"No"},index =[0])
     df_result_gender = pd.concat([baseline_row, df_result_gender[:]]).reset_index(drop = True)
     df_result_gender['GENDER'] = df_result_gender.apply(lambda x: gender_name_replace(text=x['GENDER']),axis=1)
+    df_result_gender = df_result_gender[~((df_result_gender['GENDER']=='Unknown') | (df_result_gender['GENDER']=='unknown'))]
     df_result_gender.to_excel('result_gender.xlsx')
     fig_gender_bar = plot_bar(df_result_gender,'GENDER')
     
@@ -502,7 +503,10 @@ def run(data=None, df_gender_name=None):
     # print(baseline_eth.index[0])
     baseline_row = pd.DataFrame({'ETHNICITY':baseline_eth.index[0], 'COEF':0, 'COEF_DISPLAY':0,'PVALUE':1,'STAT':"No"},index =[0])
     df_result_eth = pd.concat([baseline_row, df_result_eth[:]]).reset_index(drop = True)
+    df_result_eth = df_result_eth[~((df_result_eth['ETHNICITY']=='Unknown') | (df_result_eth['ETHNICITY']=='unknown'))]
     df_result_eth.to_excel('result_eth.xlsx')
+    
+    
     fig_eth_bar = plot_bar(df_result_eth,'ETHNICITY')
     
     # Gender Table
@@ -998,7 +1002,7 @@ def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_
         #     st_echarts(options=gender_gap_options,height="200px")
         metric_net_gap_2.markdown("<h1 style='text-align: left; vertical-align: bottom;color: #3498DB; font-size: 150%; opacity: 0.7'>Benchmark</h1>", unsafe_allow_html=True)
         
-        metric_net_gap_2.write("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 110%; opacity: 0.7'> 🌐 > -5% </h1>" "For example pay gap at -10% means that on average women are paid 10% less compared to men. In US, female gender gap is between -5% and +1%.", unsafe_allow_html=True)
+        metric_net_gap_2.write("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 110%; opacity: 0.7'> 🌐 > -5% </h1>" "Pay gap measures for every dollar paid to male employees, how much (less) or more goes to non-male employees. For example pay gap at -10% means that on average women are paid 10% less compared to men all else equal. In US, gender gap typically ranges between -5% and +1%.", unsafe_allow_html=True)
         # metric_net_gap_2.write('#')
         metric_net_gap_2.write('<font color=Orange> **Red** </font>'+' bar means the pay gap is statistical significant.  A significant gender pay gap indicates over 95% certain that gap exists after incorporates all of the legitimate determinants of pay (such as differences of skill, effort, and responsibility). From a legal perspective, it is used by courts to justify gender pay discrimination.', unsafe_allow_html=True)
         
