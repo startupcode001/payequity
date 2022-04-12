@@ -86,29 +86,13 @@ st.sidebar.markdown(get_binary_file_downloader_html(file_path, 'Download Instruc
 
 uploaded_file = st.sidebar.file_uploader('Step 2: Upload Data Template', type=['xlsx'])
 
-# st.sidebar.write('Step 3: Review the output in the main panel')
-
-st.sidebar.write('Step 3: Confirm Selected Configuration')
-config = st.sidebar.form("Configuration")
-with config:
-    # config.write("A. Choose fair pay confidence internal")
-    ci = config.slider(label = 'A. Choose fair pay confidence internal %', min_value = 70, max_value = 99, step = 1, help='Setting at 95% means I want to have a pay range so that 95% of the time, the predicted pay falls inside.')
-    # checkbox_val = st.checkbox("Form checkbox")
-    # Every form must have a submit button.
-    submitted_form = config.form_submit_button("🚀 Confirm to Run Analysis'")
-    
-
-# st.sidebar.write("Choose fair pay confidence internal at: "+str(ci))
-# st.sidebar.write('form submit' + str(submitted_form))
-# st.sidebar.write('file submit' + str(uploaded_file is not None))
-
 submit_butt = False
-if ((uploaded_file is not None) and (submitted_form == True)):
-    submit_butt = True
+if uploaded_file is not None:
+    submit_butt = st.sidebar.button('🚀 Run Analysis')
 
-st.sidebar.write('Final submit' + str(submit_butt))
-    
-# Main Panel-------------------------------------------
+st.sidebar.write('Step 3: Review the output in the main panel')
+
+# Main Panel
 c1, c2 = st.columns((2, 1))
 c2.image('Picture/salary.jpeg',use_column_width='auto')
 c1.title('PayX')
@@ -125,10 +109,10 @@ c1.write('PayX measure the value and the statistical significance of the **net g
 main_page = st.container()
 with main_page.container():
     main_page_info = main_page.empty()
-    st.write(submit_butt)
+    
     if submit_butt == True:
         main_page_info.info('Running input file.')
-        analysis(df_submit = uploaded_file, run_demo = False, file_path = file_path, display_path = display_path, main_page = main_page, main_page_info = main_page_info, ci = ci)
+        analysis(df_submit = uploaded_file, run_demo = False, file_path = file_path, display_path = display_path, main_page = main_page, main_page_info = main_page_info)
         
     else:
         m_info = main_page_info.info('Awaiting the upload of the data template.')
@@ -137,7 +121,7 @@ with main_page.container():
 #         m_col1_but = m_col1.button('See Demo')
 #         m_col2_but = m_col2.button('Close Demo')
         if m_col1_but:
-            analysis(df_submit = None, run_demo = True, file_path = file_path, display_path = display_path, main_page = main_page, main_page_info = main_page_info, ci = ci)
+            analysis(df_submit = None, run_demo = True, file_path = file_path, display_path = display_path, main_page = main_page, main_page_info = main_page_info)
             
         if m_col2_but:
             main_page.empty()
