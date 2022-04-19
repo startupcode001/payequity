@@ -213,7 +213,7 @@ def set_dropped_category(series, dropped_category):
 
 # Main Program Starts here #
 
-def run(data=None, df_gender_name=None, req_list=None):
+def run(data=None, df_gender_name=None):
     # 1.1 Setup ************************************
     company_name = 'Client Name'
     version = 'Base Pay'
@@ -271,29 +271,19 @@ def run(data=None, df_gender_name=None, req_list=None):
     # df,warning_message = clean_req_feature(data = df,feature = "EXEMPT",valid_feature_list=["Y","N"],warning_message = warning_message,data_type="string")
 
     # Clean up optional features
-    # df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "ETHNICITY",valid_feature_list=[],warning_message = warning_message,exclude_col = exclude_col, data_type="string")
-    # df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "PEOPLE_MANAGER",valid_feature_list=["Y","N"],warning_message = warning_message,exclude_col = exclude_col, data_type="string")
-    # df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "EDUCATION",valid_feature_list=[],warning_message = warning_message,exclude_col = exclude_col, data_type="string")
-    # df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "PROMOTION",valid_feature_list=["Y","N"],warning_message = warning_message,exclude_col = exclude_col, data_type="string")
-    # df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "PERFORMANCE",valid_feature_list=[],warning_message = warning_message,exclude_col = exclude_col, data_type="string")
-    # df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "DATE_OF_BIRTH",valid_feature_list=[],warning_message = warning_message,exclude_col = exclude_col, data_type="datetime")
-    # df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "DATE_OF_HIRE",valid_feature_list=[],warning_message = warning_message,exclude_col = exclude_col, data_type="datetime")
-    # df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "EXEMPT",valid_feature_list=[],warning_message = warning_message,exclude_col = exclude_col,data_type="string")
+    df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "ETHNICITY",valid_feature_list=[],warning_message = warning_message,exclude_col = exclude_col, data_type="string")
+    df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "PEOPLE_MANAGER",valid_feature_list=["Y","N"],warning_message = warning_message,exclude_col = exclude_col, data_type="string")
+    df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "EDUCATION",valid_feature_list=[],warning_message = warning_message,exclude_col = exclude_col, data_type="string")
+    df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "PROMOTION",valid_feature_list=["Y","N"],warning_message = warning_message,exclude_col = exclude_col, data_type="string")
+    df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "PERFORMANCE",valid_feature_list=[],warning_message = warning_message,exclude_col = exclude_col, data_type="string")
+    df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "DATE_OF_BIRTH",valid_feature_list=[],warning_message = warning_message,exclude_col = exclude_col, data_type="datetime")
+    df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "DATE_OF_HIRE",valid_feature_list=[],warning_message = warning_message,exclude_col = exclude_col, data_type="datetime")
+    df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "EXEMPT",valid_feature_list=[],warning_message = warning_message,exclude_col = exclude_col,data_type="string")
     
     # Clean up customized features
-    # standard_col = ['SNAPSHOT_DATE','EEID','SALARY','GENDER','ETHNICITY',
-    #             'JOB_LEVEL_OR_COMP_GRADE','JOB_FUNCTION','COUNTRY','LOCATION','FULL_TIME',
-    #             'EXEMPT','PEOPLE_MANAGER','EDUCATION','PROMOTION','PERFORMANCE','DATE_OF_BIRTH','DATE_OF_HIRE']
-    # all_col = df.columns.tolist()
-    # cust_col = [x for x in all_col if x not in standard_col]
-    # df_type = pd.DataFrame(df_type).reset_index()
-    # df_type.columns = ['COL_NAME','TYPE']
-    # df_type = df_type[~df_type['COL_NAME'].isin(standard_col)]
-    # for i, row in df_type.iterrows():
-    #     df,warning_message, exclude_col = clean_optional_feature(data = df,feature = row['COL_NAME'],valid_feature_list=[],warning_message = warning_message,exclude_col = exclude_col, data_type=row['TYPE'])
-    req_list
-    # Clean up customized features
-    standard_col = req_list
+    standard_col = ['SNAPSHOT_DATE','EEID','SALARY','GENDER','ETHNICITY',
+                'JOB_LEVEL_OR_COMP_GRADE','JOB_FUNCTION','COUNTRY','LOCATION','FULL_TIME',
+                'EXEMPT','PEOPLE_MANAGER','EDUCATION','PROMOTION','PERFORMANCE','DATE_OF_BIRTH','DATE_OF_HIRE']
     all_col = df.columns.tolist()
     cust_col = [x for x in all_col if x not in standard_col]
     df_type = pd.DataFrame(df_type).reset_index()
@@ -795,10 +785,8 @@ def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_
             inc_list.append(col)
 
     error_req_list = [x for x in req_list if x not in inc_list]
-    error_req_message=""
-    if len(error_req_list) != 0:
-        error_req_message = 'The requested data field below has not been provided: '+ ', '.join(error_req_list)+'. Please update and resubmit the template.'
-    
+    error_req_message = 'The requested data field below has not been provided: '+ ', '.join(error_req_list)+'. Please update and resubmit the template.'
+
     final_req_list = [x for x in req_list if x not in ['EEID','SALARY']]
     display_req_list = display_rename(display_map,final_req_list)
 
@@ -815,12 +803,8 @@ def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_
         req_col = req_select.multiselect(label = 'B: Required Pay Factors',options=display_req_list,default=display_req_list,disabled=True)
         submitted_form = config.form_submit_button("🚀 Confirm to Run Analysis'")
 
-    # Final Filter on pay driver selection
     optional_col_select = display_rename(display_inv_map,optional_col)
-    req_list = ['SNAPSHOT_DATE'] + req_list
-    final_col_select = req_list + optional_col_select
-    df =  df[final_col_select]
-    
+
     print('inc: ')
     print(inc_list)
     print('exc: ')
@@ -841,18 +825,14 @@ def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_
     # st.stop()
 
     if submitted_form:
-        # st.write(optional_col_select)
-        st.write(final_col_select)
-        st.write(df.columns.tolist())
+        st.write(optional_col_select)
         display_map = dict(zip(df_name['PROGRAM_NAME'], df_name['DISPLAY_NAME']))
         # display_gender_map = dict(zip(df_gender_name['PROGRAM_NAME'], df_gender_name['DISPLAY_NAME']))
-        
+
         # Run discovery model:
         m_info = main_page_info.success('Running Gap Analysis')
-        df, df_org,  df_validation, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2, female_coff, female_pvalue, before_clean_record, after_clean_record,hc_female,X_full,budget_df,exclude_feature, include_feature,df_gender,df_eth,fig_gender_hc,fig_eth_hc,avg_pay, gender_female_pay, gender_nonb_pay, eth_minor_pay,fig_gender_bar, fig_eth_bar,df_result_gender, df_result_eth, eth_baseline = run(df,df_gender_name,req_list)     
-        
-        st.write(df.columns.tolist())
-        
+        df, df_org,  df_validation, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2, female_coff, female_pvalue, before_clean_record, after_clean_record,hc_female,X_full,budget_df,exclude_feature, include_feature,df_gender,df_eth,fig_gender_hc,fig_eth_hc,avg_pay, gender_female_pay, gender_nonb_pay, eth_minor_pay,fig_gender_bar, fig_eth_bar,df_result_gender, df_result_eth, eth_baseline = run(df,df_gender_name)     
+
         # , fig_gender_bar
         # ,fig_eth_hc
         print('pvalue'+str(female_pvalue))

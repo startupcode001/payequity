@@ -271,29 +271,19 @@ def run(data=None, df_gender_name=None, req_list=None):
     # df,warning_message = clean_req_feature(data = df,feature = "EXEMPT",valid_feature_list=["Y","N"],warning_message = warning_message,data_type="string")
 
     # Clean up optional features
-    # df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "ETHNICITY",valid_feature_list=[],warning_message = warning_message,exclude_col = exclude_col, data_type="string")
-    # df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "PEOPLE_MANAGER",valid_feature_list=["Y","N"],warning_message = warning_message,exclude_col = exclude_col, data_type="string")
-    # df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "EDUCATION",valid_feature_list=[],warning_message = warning_message,exclude_col = exclude_col, data_type="string")
-    # df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "PROMOTION",valid_feature_list=["Y","N"],warning_message = warning_message,exclude_col = exclude_col, data_type="string")
-    # df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "PERFORMANCE",valid_feature_list=[],warning_message = warning_message,exclude_col = exclude_col, data_type="string")
-    # df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "DATE_OF_BIRTH",valid_feature_list=[],warning_message = warning_message,exclude_col = exclude_col, data_type="datetime")
-    # df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "DATE_OF_HIRE",valid_feature_list=[],warning_message = warning_message,exclude_col = exclude_col, data_type="datetime")
-    # df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "EXEMPT",valid_feature_list=[],warning_message = warning_message,exclude_col = exclude_col,data_type="string")
+    df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "ETHNICITY",valid_feature_list=[],warning_message = warning_message,exclude_col = exclude_col, data_type="string")
+    df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "PEOPLE_MANAGER",valid_feature_list=["Y","N"],warning_message = warning_message,exclude_col = exclude_col, data_type="string")
+    df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "EDUCATION",valid_feature_list=[],warning_message = warning_message,exclude_col = exclude_col, data_type="string")
+    df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "PROMOTION",valid_feature_list=["Y","N"],warning_message = warning_message,exclude_col = exclude_col, data_type="string")
+    df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "PERFORMANCE",valid_feature_list=[],warning_message = warning_message,exclude_col = exclude_col, data_type="string")
+    df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "DATE_OF_BIRTH",valid_feature_list=[],warning_message = warning_message,exclude_col = exclude_col, data_type="datetime")
+    df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "DATE_OF_HIRE",valid_feature_list=[],warning_message = warning_message,exclude_col = exclude_col, data_type="datetime")
+    df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "EXEMPT",valid_feature_list=[],warning_message = warning_message,exclude_col = exclude_col,data_type="string")
     
     # Clean up customized features
-    # standard_col = ['SNAPSHOT_DATE','EEID','SALARY','GENDER','ETHNICITY',
-    #             'JOB_LEVEL_OR_COMP_GRADE','JOB_FUNCTION','COUNTRY','LOCATION','FULL_TIME',
-    #             'EXEMPT','PEOPLE_MANAGER','EDUCATION','PROMOTION','PERFORMANCE','DATE_OF_BIRTH','DATE_OF_HIRE']
-    # all_col = df.columns.tolist()
-    # cust_col = [x for x in all_col if x not in standard_col]
-    # df_type = pd.DataFrame(df_type).reset_index()
-    # df_type.columns = ['COL_NAME','TYPE']
-    # df_type = df_type[~df_type['COL_NAME'].isin(standard_col)]
-    # for i, row in df_type.iterrows():
-    #     df,warning_message, exclude_col = clean_optional_feature(data = df,feature = row['COL_NAME'],valid_feature_list=[],warning_message = warning_message,exclude_col = exclude_col, data_type=row['TYPE'])
-    req_list
-    # Clean up customized features
-    standard_col = req_list
+    standard_col = ['SNAPSHOT_DATE','EEID','SALARY','GENDER','ETHNICITY',
+                'JOB_LEVEL_OR_COMP_GRADE','JOB_FUNCTION','COUNTRY','LOCATION','FULL_TIME',
+                'EXEMPT','PEOPLE_MANAGER','EDUCATION','PROMOTION','PERFORMANCE','DATE_OF_BIRTH','DATE_OF_HIRE']
     all_col = df.columns.tolist()
     cust_col = [x for x in all_col if x not in standard_col]
     df_type = pd.DataFrame(df_type).reset_index()
@@ -301,6 +291,8 @@ def run(data=None, df_gender_name=None, req_list=None):
     df_type = df_type[~df_type['COL_NAME'].isin(standard_col)]
     for i, row in df_type.iterrows():
         df,warning_message, exclude_col = clean_optional_feature(data = df,feature = row['COL_NAME'],valid_feature_list=[],warning_message = warning_message,exclude_col = exclude_col, data_type=row['TYPE'])
+    
+    
     
     # Record Message
     df_org = df.copy()

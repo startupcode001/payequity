@@ -81,24 +81,17 @@ st.markdown(hide_menu_style, unsafe_allow_html=True)
 
 # st.sidebar.markdown("""---""")
 
-# if "demo_box" not in st.session_state:
-#     st.session_state.demo_box = False
+if "demo_box" not in st.session_state:
+    st.session_state.demo_box = False
 
 st.sidebar.header(' 🎯 Start here')
-demo_check = st.sidebar.checkbox('See Demo', key='demo_box')
 
 # Step 1: Download Template
-# st.sidebar.markdown("Step 1: 🖱️ 'Save link as...'")
-# st.sidebar.markdown(get_binary_file_downloader_html(file_path, 'Download Instruction and Data Template'), unsafe_allow_html=True)
+st.sidebar.markdown("Step 1: 🖱️ 'Save link as...'")
+st.sidebar.markdown(get_binary_file_downloader_html(file_path, 'Download Instruction and Data Template'), unsafe_allow_html=True)
 
 # Step 2: Upload File
-if demo_check==False:
-    st.sidebar.markdown("Step 1: 🖱️ 'Save link as...'")
-    st.sidebar.markdown(get_binary_file_downloader_html(file_path, 'Download Instruction and Data Template'), unsafe_allow_html=True)
-    uploaded_file = st.sidebar.file_uploader('Step 2: Upload Data Template', type=['xlsx'])
-else:
-    st.sidebar.write('Please clear the "See Demo" checkbox to start your analysis.')
-    uploaded_file = None
+uploaded_file = st.sidebar.file_uploader('Step 2: Upload Data Template', type=['xlsx'])
 
 # Step 3: Check empty columns
 # st.sidebar.write('Step 3: Review the output in the main panel')
@@ -124,10 +117,10 @@ else:
 # if ((uploaded_file is not None)):
 #     submit_butt = st.sidebar.button("Submit")
 
-# st.sidebar.write('Step 3: Review the output in the main panel')
-# st.sidebar.write('If you wish to launch your data after the demonstration, please uncheck the "See Demo" box.')
+st.sidebar.write('Step 3: Review the output in the main panel')
 
 st.sidebar.markdown("""---""")
+demo_check = st.sidebar.checkbox('See Demo', key='demo_box')
 
 # m_col1,m_col2 = st.sidebar.columns((1, 1))
 # m_col1_but = m_col1.button('See Demo')
@@ -171,7 +164,7 @@ with main_page.container():
         main_page_info.info('Running input file.')
         # analysis(df_submit = uploaded_file, run_demo = False, file_path = file_path, display_path = display_path, main_page = main_page, main_page_info = main_page_info, ci = ci)
         analysis(df_submit = uploaded_file, run_demo = False, file_path = file_path, display_path = display_path, main_page = main_page, main_page_info = main_page_info)
-        # st.session_state["demo_box"] = False
+        st.session_state["demo_box"] = False
     else:
         m_info = main_page_info.info('Awaiting the upload of the data template.')
         if demo_check:

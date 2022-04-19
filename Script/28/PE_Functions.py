@@ -213,7 +213,7 @@ def set_dropped_category(series, dropped_category):
 
 # Main Program Starts here #
 
-def run(data=None, df_gender_name=None, req_list=None):
+def run(data=None, df_gender_name=None):
     # 1.1 Setup ************************************
     company_name = 'Client Name'
     version = 'Base Pay'
@@ -271,29 +271,19 @@ def run(data=None, df_gender_name=None, req_list=None):
     # df,warning_message = clean_req_feature(data = df,feature = "EXEMPT",valid_feature_list=["Y","N"],warning_message = warning_message,data_type="string")
 
     # Clean up optional features
-    # df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "ETHNICITY",valid_feature_list=[],warning_message = warning_message,exclude_col = exclude_col, data_type="string")
-    # df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "PEOPLE_MANAGER",valid_feature_list=["Y","N"],warning_message = warning_message,exclude_col = exclude_col, data_type="string")
-    # df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "EDUCATION",valid_feature_list=[],warning_message = warning_message,exclude_col = exclude_col, data_type="string")
-    # df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "PROMOTION",valid_feature_list=["Y","N"],warning_message = warning_message,exclude_col = exclude_col, data_type="string")
-    # df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "PERFORMANCE",valid_feature_list=[],warning_message = warning_message,exclude_col = exclude_col, data_type="string")
-    # df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "DATE_OF_BIRTH",valid_feature_list=[],warning_message = warning_message,exclude_col = exclude_col, data_type="datetime")
-    # df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "DATE_OF_HIRE",valid_feature_list=[],warning_message = warning_message,exclude_col = exclude_col, data_type="datetime")
-    # df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "EXEMPT",valid_feature_list=[],warning_message = warning_message,exclude_col = exclude_col,data_type="string")
+    df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "ETHNICITY",valid_feature_list=[],warning_message = warning_message,exclude_col = exclude_col, data_type="string")
+    df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "PEOPLE_MANAGER",valid_feature_list=["Y","N"],warning_message = warning_message,exclude_col = exclude_col, data_type="string")
+    df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "EDUCATION",valid_feature_list=[],warning_message = warning_message,exclude_col = exclude_col, data_type="string")
+    df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "PROMOTION",valid_feature_list=["Y","N"],warning_message = warning_message,exclude_col = exclude_col, data_type="string")
+    df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "PERFORMANCE",valid_feature_list=[],warning_message = warning_message,exclude_col = exclude_col, data_type="string")
+    df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "DATE_OF_BIRTH",valid_feature_list=[],warning_message = warning_message,exclude_col = exclude_col, data_type="datetime")
+    df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "DATE_OF_HIRE",valid_feature_list=[],warning_message = warning_message,exclude_col = exclude_col, data_type="datetime")
+    df,warning_message, exclude_col = clean_optional_feature(data = df,feature = "EXEMPT",valid_feature_list=[],warning_message = warning_message,exclude_col = exclude_col,data_type="string")
     
     # Clean up customized features
-    # standard_col = ['SNAPSHOT_DATE','EEID','SALARY','GENDER','ETHNICITY',
-    #             'JOB_LEVEL_OR_COMP_GRADE','JOB_FUNCTION','COUNTRY','LOCATION','FULL_TIME',
-    #             'EXEMPT','PEOPLE_MANAGER','EDUCATION','PROMOTION','PERFORMANCE','DATE_OF_BIRTH','DATE_OF_HIRE']
-    # all_col = df.columns.tolist()
-    # cust_col = [x for x in all_col if x not in standard_col]
-    # df_type = pd.DataFrame(df_type).reset_index()
-    # df_type.columns = ['COL_NAME','TYPE']
-    # df_type = df_type[~df_type['COL_NAME'].isin(standard_col)]
-    # for i, row in df_type.iterrows():
-    #     df,warning_message, exclude_col = clean_optional_feature(data = df,feature = row['COL_NAME'],valid_feature_list=[],warning_message = warning_message,exclude_col = exclude_col, data_type=row['TYPE'])
-    req_list
-    # Clean up customized features
-    standard_col = req_list
+    standard_col = ['SNAPSHOT_DATE','EEID','SALARY','GENDER','ETHNICITY',
+                'JOB_LEVEL_OR_COMP_GRADE','JOB_FUNCTION','COUNTRY','LOCATION','FULL_TIME',
+                'EXEMPT','PEOPLE_MANAGER','EDUCATION','PROMOTION','PERFORMANCE','DATE_OF_BIRTH','DATE_OF_HIRE']
     all_col = df.columns.tolist()
     cust_col = [x for x in all_col if x not in standard_col]
     df_type = pd.DataFrame(df_type).reset_index()
@@ -750,108 +740,26 @@ def reme_pvalue_seek(df,budget_df,X_full, project_group_feature, protect_group_c
     
     return seek_budget_df,seek_budget,seek_resulting_gap,seek_resulting_pvalues,seek_adj_count, seek_adj_budget_pct,seek_pass,seek_success
 
-# def exam_col(file_path,display_path):
-#     message = ""
-#     df['Data2'].replace(r'^\s*$', np.nan, regex=True).isna().all()
-
-def display_rename(display_map,feature):
-    return [display_map.get(item,item)  for item in feature]
-
-# def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_info, ci):
-def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_info):
+def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_info, ci):
     # Process df (not demo datafile)    
-    # with st.spinner('Running analysis, Please wait for it...'):
-    m_info = main_page_info.success('Reading Data')
-    if run_demo == True:
-        # Demo Run
-        df = pd.read_excel(file_path,sheet_name="Demo Data")
-    else:
-        df = pd.read_excel(df_submit,sheet_name="Submission")    
-
-    # Convert program column names to display
-    df_name = pd.read_excel(display_path,sheet_name="Standard_Col")
-    df_cus_name = pd.read_excel(display_path,sheet_name="Custom_Col")
-    df_gender_name = pd.read_excel(display_path,sheet_name="Gender")
-
-    # Run Checking    
-    df_check = df.iloc[1:]
-    full_list = df_name['PROGRAM_NAME'].tolist()
-    full_list_display = df_name['DISPLAY_NAME'].tolist()
-
-    req_list = df_name[df_name['REQUIRE']==1]['PROGRAM_NAME'].tolist()
-    # req_list_display = df_name[df_name['REQUIRE']==1]['DISPLAY_NAME'].tolist()
-    cus_list = df_cus_name['PROGRAM_NAME'].tolist()
-    display_map = dict(zip(full_list, full_list_display))
-    display_inv_map = dict(zip(full_list_display, full_list))
-
-    inc_list = []
-    exc_list = []
-
-    for col in df_check.columns.tolist():
-        if df_check[col].replace(r'^\s*$', np.nan, regex=True).isna().all():
-        # if df_check[col].isna():
-            exc_list.append(col)
+    with st.spinner('Running analysis, Please wait for it...'):
+        m_info = main_page_info.success('Reading Data')
+        if run_demo == True:
+            # Demo Run
+            df = pd.read_excel(file_path,sheet_name="Demo Data")
         else:
-            inc_list.append(col)
-
-    error_req_list = [x for x in req_list if x not in inc_list]
-    error_req_message=""
-    if len(error_req_list) != 0:
-        error_req_message = 'The requested data field below has not been provided: '+ ', '.join(error_req_list)+'. Please update and resubmit the template.'
-    
-    final_req_list = [x for x in req_list if x not in ['EEID','SALARY']]
-    display_req_list = display_rename(display_map,final_req_list)
-
-    final_optional_list = [x for x in inc_list if x not in (req_list+cus_list+['SNAPSHOT_DATE'])]
-    display_optional_list = display_rename(display_map,final_optional_list)
-
-    # Display selection Step 3
-    config = main_page.form("Configuration")
-    with config:
-        config.write("Step 3. Confirm Selected Configuration")
-        ci_select, optional_select, req_select, = config.columns((0.5, 1, 1)) 
-        ci = ci_select.slider(label = 'A: Choose fair pay confidence internal %', value = 95, min_value = 70, max_value = 99, step = 1, help='Setting at 95% means I want to have a pay range so that 95% of the time, the predicted pay falls inside.')
-        optional_col = optional_select.multiselect(label = 'C: Select Optional Pay Factors',options=display_optional_list,default=display_optional_list,disabled=False)
-        req_col = req_select.multiselect(label = 'B: Required Pay Factors',options=display_req_list,default=display_req_list,disabled=True)
-        submitted_form = config.form_submit_button("🚀 Confirm to Run Analysis'")
-
-    # Final Filter on pay driver selection
-    optional_col_select = display_rename(display_inv_map,optional_col)
-    req_list = ['SNAPSHOT_DATE'] + req_list
-    final_col_select = req_list + optional_col_select
-    df =  df[final_col_select]
-    
-    print('inc: ')
-    print(inc_list)
-    print('exc: ')
-    print(exc_list)
-    print('req: ')
-    print(req_list)
-    print('cus: ')
-    print(cus_list)
-    print('error message req: ')
-    print(error_req_message)
-    print('display req')
-    print(display_req_list)
-    print('display optional')
-    print(display_optional_list)
-    print('display system run optional')
-    print(optional_col_select)
-
-    # st.stop()
-
-    if submitted_form:
-        # st.write(optional_col_select)
-        st.write(final_col_select)
-        st.write(df.columns.tolist())
+            df = pd.read_excel(df_submit,sheet_name="Submission")    
+        
+        # Convert program column names to display
+        df_name = pd.read_excel(display_path,sheet_name="Standard_Col")
+        df_gender_name = pd.read_excel(display_path,sheet_name="Gender")
+        
         display_map = dict(zip(df_name['PROGRAM_NAME'], df_name['DISPLAY_NAME']))
         # display_gender_map = dict(zip(df_gender_name['PROGRAM_NAME'], df_gender_name['DISPLAY_NAME']))
         
         # Run discovery model:
         m_info = main_page_info.success('Running Gap Analysis')
-        df, df_org,  df_validation, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2, female_coff, female_pvalue, before_clean_record, after_clean_record,hc_female,X_full,budget_df,exclude_feature, include_feature,df_gender,df_eth,fig_gender_hc,fig_eth_hc,avg_pay, gender_female_pay, gender_nonb_pay, eth_minor_pay,fig_gender_bar, fig_eth_bar,df_result_gender, df_result_eth, eth_baseline = run(df,df_gender_name,req_list)     
-        
-        st.write(df.columns.tolist())
+        df, df_org,  df_validation, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2, female_coff, female_pvalue, before_clean_record, after_clean_record,hc_female,X_full,budget_df,exclude_feature, include_feature,df_gender,df_eth,fig_gender_hc,fig_eth_hc,avg_pay, gender_female_pay, gender_nonb_pay, eth_minor_pay,fig_gender_bar, fig_eth_bar,df_result_gender, df_result_eth, eth_baseline = run(df,df_gender_name)     
         
         # , fig_gender_bar
         # ,fig_eth_hc
@@ -860,7 +768,7 @@ def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_
         gender_gap_stats = '**NOT** statistically significant'
         if female_pvalue<0.05:
             gender_gap_stats = 'statistically significant'
-
+        
         # Run Reme Pvalue = 7%
         m_info = main_page_info.success('Running Remediation Scenario A: Mitigate Legal Risk')
         seek_budget_df_pv,seek_budget_pv,seek_resulting_gap_pv,seek_resulting_pvalues_pv,seek_adj_count_pv, seek_adj_budget_pct_pv,seek_pass_pv, seek_success_pv = reme_pvalue_seek(df,budget_df,X_full, project_group_feature='GENDER', protect_group_class='F', seek_goal=0.07, current_gap = female_coff, current_pvalue = female_pvalue, search_step = -0.005)
@@ -877,7 +785,7 @@ def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_
             seek_budget_df_gap,seek_budget_gap,seek_resulting_gap_gap,seek_resulting_pvalues_gap,seek_adj_count_gap, seek_adj_budget_pct_gap,seek_pass_gap, seek_success_gap = reme_gap_seek(df,budget_df,X_full, project_group_feature='GENDER', protect_group_class='F', seek_goal=0, current_gap = female_coff, current_pvalue = female_pvalue, search_step = -0.001)
         print('pvalue'+str(seek_resulting_pvalues_gap))  
         seek_budget_df_gap.to_excel('df_gap.xlsx')
-
+        
         # Create download file for remediation
         reme_download_flag = 0
         df_reme_org = df.drop(columns=['VALIDATION_MESSAGE', 'VALIDATION_FLAG', 'NOW','LOG_SALARY'])
@@ -894,7 +802,7 @@ def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_
             df_reme_ind = df_reme_ind[list_reme]
             reme_download_flag = 1
         # df_reme_ind.to_excel('df_reme_ind.xlsx')
-
+        
         # Run Remediation Messages
         message_budget_pv = np.nan
         if seek_pass_pv == False:
@@ -924,7 +832,7 @@ def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_
         scenario = ['Current','A','B']
         action = ['🏁 No change','✔️ Mitigate legal risk \n'+'✔️ Reduce the gender gap to a statistical insignificant level.','✔️ Mitigate legal risk \n'+'✔️ Completely close gender gap \n'+'✔️ Become a market leader (Top 1%)\n']
         budget = ['0',message_budget_pv,message_budget_gap]
-
+        
         if abs(seek_resulting_gap_gap)<0.0005:
                 seek_resulting_gap_gap = 0
         net_gap = [female_coff,seek_resulting_gap_pv,seek_resulting_gap_gap]
@@ -933,21 +841,21 @@ def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_
         # Show exclude and include features
         include_feature = [display_map.get(item,item)  for item in include_feature]
         exclude_feature = [display_map.get(item,item)  for item in exclude_feature]
-
+        
         include_feature_text =  ', '.join(include_feature)
         exclude_feature_text =  ', '.join(exclude_feature)
         # st.sidebar.options = st.sidebar.markdown('Pay drivers included in model:' + include_feature_text)
-
+        
         # Run data validation
         m_info = main_page_info.success('Output Data Validation')
         demo_validation = convert_df(df_validation)
-
+        
         output = BytesIO()
         writer = pd.ExcelWriter(output, engine='xlsxwriter')
         df_validation.to_excel(writer, index=False, sheet_name='Sheet1')
         workbook = writer.book
         worksheet = writer.sheets['Sheet1']
-
+        
         for column in df_validation:
             column_width = max(df_validation[column].astype(str).map(len).max(), len(column))+3
             col_idx = df_validation.columns.get_loc(column)
@@ -957,18 +865,18 @@ def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_
         cell_format.set_pattern(1)  # This is optional when using a solid fill.
         cell_format.set_bg_color('yellow')
         worksheet.write('A1', 'Please see the instructions for a valid record.',cell_format)
-
+        
         writer.save()
         processed_data = output.getvalue()
-
+                
         # Display run is successful message    
         m_info = main_page_info.success('View Result: '+message.loc[['OVERVIEW']][0])
-
+        
         # Display Overview
 #         main_page.markdown("""---""")
 #         overview_1, overview_2, overview_3,overview_4 = main_page.columns((1, 0.001, 0.001, 0.001))
 #         overview_A1, overview_A2, overview_B1,overview_B2 = main_page.columns((1, 1, 1, 1))
-
+        
 #         # overview_1.image('Picture/overview.jpg',use_column_width='auto')
 #         if r2>0.7:
 #             if female_pvalue>0.05:
@@ -987,7 +895,7 @@ def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_
 #                     message = 'You have a net gender pay gap of '+gender_gap_format+' and it is '+ gender_gap_stats + '. This result poses a <font color=Orange> **high** </font> legal risk. You should consider to reducing it to a statistically insignificant level - See Scenario A below. An alternative is to consider closing the pay gap - see Scenario B below.'
 #                     # overview_1.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Orange; font-size: 150%; opacity: 0.7'> ⚠️ Be mindful of legal risks  </h1>", unsafe_allow_html=True)
 #                     overview_1.markdown(message, unsafe_allow_html=True)
-
+                    
 #                     # message = 'You have a net gender pay gap of '+gender_gap_format+'. It is '+ gender_gap_stats + ' which can make you more prone to gender-related litigation. Consider to reducing it to a statistically insignificant level (Scenario A) or completely closing the gap (Scenario B).'
 #                     # with overview_1:
 #                     #     hc.info_card(title='Watch out for legal risk', content=message, theme_override=get_hc_theme('warning'), key='main_message')
@@ -999,13 +907,13 @@ def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_
 #                     #     hc.info_card(title='Scenario B - Budget', content=message_budget_gap, theme_override=get_hc_theme('good'), key='B1')
 #                     # with overview_B2:
 #                     #     hc.info_card(title='Scenario B - Result', content=net_gap[2], theme_override=get_hc_theme('good'), key='B2')
-
+                    
 #         else:
 #             overview_1.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Orange; font-size: 150%; opacity: 0.7'> Contact Us </h1>", unsafe_allow_html=True)
 #             overview_1.markdown('The default pay drivers are <font color=Orange> **not sufficient** </font> to account for the variation of wages between employees. To improve the model robustness, you may include additional pay drivers such as high potential, cost centre, skills and so on in the template. Please contact us for a free consultation if you are not sure.', unsafe_allow_html=True)            
 #             main_page.markdown("""---""")
 #             st.stop()
-
+            
         main_page.markdown("""---""")
         m_col1_but_col1, m_col1_but_col2, m_col1_but_col3, m_col1_but_col4 = main_page.columns((0.5, 0.5, 1 , 1))
         # m_col1_but_col2, m_col1_but_col3 = main_page.columns((1, 1))
@@ -1013,65 +921,65 @@ def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_
         # m_col1_but_col1.metric('💬 Submission Record',before_clean_record)
         # m_col1_but_col2.metric('🏆 Successful Run',after_clean_record)
         # m_col1_but_col3.metric('👩 Female %',round(hc_female/after_clean_record,2)*100)
-
+        
         # with m_col1_but_col2:
         #     df_eth.to_excel('eth2.xlsx')
         #     # plost.donut_chart(data=df_eth,theta='HC',color='ETHNICITY', title = 'Ethnicity %', legend = 'right', use_container_width = True)
         #     plost.donut_chart(data=df_eth,theta='HC',color='ETHNICITY_NAME', title = 'Eth')
-
+        
         m_col1_but_col1.metric('Submitted Entry',before_clean_record)
         m_col1_but_col1.metric('Processed Entry',after_clean_record)
         m_col1_but_col1.metric('Invalid Entry',before_clean_record - after_clean_record)
         if operator.not_(df_validation.empty):
             m_col1_but_col1.markdown(get_excel_file_downloader_html(processed_data, 'Invalid Entry.xlsx'), unsafe_allow_html=True)
             m_col1_but_col1.markdown("🖱️ 'Save link as...'")
-
+        
         avg_pay_info = str(locale.format("%d", round(avg_pay/1000,0), grouping=True))+'k'
         m_col1_but_col2.metric('Ave Overall Salary',avg_pay_info)
-
+        
         gender_female_pay_info = str(locale.format("%d", round(gender_female_pay/1000,0), grouping=True))+'k'
         gender_female_pay_delta = str(locale.format("%d", round(gender_female_pay/1000,0) - round(avg_pay/1000,0), grouping=True))+'k'
         # m_col1_but_col2.metric('Avg Non-Male Salary',gender_minor_pay_info, delta=gender_minor_pay_delta)
         m_col1_but_col2.metric('Avg Female Salary',gender_female_pay_info)
-
+        
         gender_nonb_pay_info = str(locale.format("%d", round(gender_nonb_pay/1000,0), grouping=True))+'k'
         gender_nonb_pay_delta = str(locale.format("%d", round(gender_nonb_pay/1000,0) - round(avg_pay/1000,0), grouping=True))+'k'
         # m_col1_but_col2.metric('Avg Non-Male Salary',gender_minor_pay_info, delta=gender_minor_pay_delta)
         m_col1_but_col2.metric('Avg Non-Binary Salary',gender_nonb_pay_info)
-
+        
         eth_major_name = 'Avg Non-'+ df_eth['ETHNICITY_NAME'][0] + ' Salary'
         eth_minor_pay_info = str(locale.format("%d", round(eth_minor_pay/1000,0), grouping=True))+'k'
         eth_minor_pay_delta = str(locale.format("%d", round(eth_minor_pay/1000,0) - round(avg_pay/1000,0), grouping=True))+'k'
         # m_col1_but_col2.metric(eth_major_name,eth_minor_pay_info, delta = eth_minor_pay_delta)
         m_col1_but_col2.metric(eth_major_name,eth_minor_pay_info)
-
+        
         # m_col1_but_col1_2.metric('Submission Record',before_clean_record)
         # m_col1_but_col1_2.metric('Successful Run',after_clean_record)
-
+        
         m_col1_but_col3.markdown("<h1 style='text-align: center; vertical-align: top; font-size: 100%'>Gender Distribution</h1>", unsafe_allow_html=True)
         m_col1_but_col3.pyplot(fig_gender_hc)
-
+        
         m_col1_but_col4.markdown("<h1 style='text-align: center; vertical-align: top; font-size: 100%'>Ethnicity Distribution</h1>", unsafe_allow_html=True)
         m_col1_but_col4.pyplot(fig_eth_hc)
-
+            
         # main_page.markdown("""---""")
-
+        
         # main_page.pyplot(fig_gender_hc)
 #         test1, test2, test3 = main_page.columns((1, 1, 1))
-
+        
 #         test1.plotly_chart(fig_gender_bar, use_container_width=True)
-
+        
         # main_page.markdown("""---""")
-
+        
         with st.expander("What pay drivers are supplied:"):
             inc_col, exc_col = st.columns((1, 1))
             inc_col.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 110%; opacity: 0.7'> ✔️ Pay drivers you supplied:  </h1>", unsafe_allow_html=True)
             inc_col.markdown(include_feature_text, unsafe_allow_html=True)       
             exc_col.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Orange; font-size: 110%; opacity: 0.7'> ⚠️ Pay drivers you haven't supplied:  </h1>", unsafe_allow_html=True)        
             exc_col.markdown(exclude_feature_text, unsafe_allow_html=True)
-
+        
         # r2= 0.9
-
+        
         # Show R2
         main_page.markdown("""---""")
         metric_R2_1, metric_R2_2, metric_R2_3 = main_page.columns((1, 1.2, 1.3))            
@@ -1080,7 +988,7 @@ def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_
         with metric_R2_1:
             r2_options = get_r2_option(r2)
             st_echarts(options=r2_options,height="200px") 
-
+        
         metric_R2_2.markdown("<h1 style='text-align: left; vertical-align: bottom;color: #3498DB; font-size: 150%; opacity: 0.7'>Benchmark</h1>", unsafe_allow_html=True)
         metric_R2_2.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 110%; opacity: 0.7'> 🌐 70% ~ 100%  </h1>" "  \n"  "Robustness measures whether the standard model adequately explains compensation decisions. For instance, 80% means that the standard model explains 80% of the pay difference between employees.", unsafe_allow_html=True)
         metric_R2_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: #3498DB; font-size: 150%; opacity: 0.7'>Observation</h1>", unsafe_allow_html=True)
@@ -1092,16 +1000,16 @@ def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_
             metric_R2_3.markdown("The default compensation drivers are <font color=Orange> **not robust** </font> in drawing conclusions on the salary gap. In general, we can improve the model robustness by adding additional drivers such as talent potential, cost centre, skills and so on. Please contact us for an open consultation.", unsafe_allow_html=True)
             st.stop()
         # metric_R2_3.markdown("<h1 style='text-align: center; vertical-align: bottom; color: Black; background-color: #3498DB; opacity: 0.7; border-style: dotted'>Observation</h1>", unsafe_allow_html=True)
-
+        
         # Show Gender Gap
         main_page.markdown("""---""")
         metric_net_gap_1, metric_net_gap_2, metric_net_gap_3 = main_page.columns((1, 1.1, 1.4))            
         metric_net_gap_1.markdown("<h1 style='text-align: left; vertical-align: bottom; font-size: 150%; color: #3498DB; opacity: 0.7'> Gender Gap </h1>", unsafe_allow_html=True)
         metric_net_gap_1.plotly_chart(fig_gender_bar, use_container_width=True)
-
+        
         metric_net_gap_2.markdown("<h1 style='text-align: left; vertical-align: bottom;color: #3498DB; font-size: 150%; opacity: 0.7'>Benchmark</h1>", unsafe_allow_html=True)
         metric_net_gap_2.write("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 110%; opacity: 0.7'> 🌐 -3% ~ 1% </h1>" "Pay gap measures for every dollar paid to male employees, how much (less) or more goes to non-male employees. For example pay gap at -10% means that on average women are paid 10% less compared to men all else equal. In US, gender gap typically ranges between -3% and +1%. ", unsafe_allow_html=True)    
-
+        
         num_gender_sig = df_result_gender['STAT_COUNT'].sum()
         # num_gender_sig = 0
         metric_net_gap_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: #3498DB; font-size: 150%; opacity: 0.7'>Observation</h1>", unsafe_allow_html=True)
@@ -1115,16 +1023,16 @@ def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_
             metric_net_gap_3.write('There is no negative statistically significant gender pay gap shown in the chart. A significant gender pay gap means - we are more than 95% certain that the gap exists after incorporates all of the legitimate determinants of pay (such as differences of skill, effort, and responsibility). From a legal perspective:',unsafe_allow_html=True) 
             metric_net_gap_3.write('* Statistically significant gap - Strong evidence of gender pay discrimination' +'\n'+'* Non statistically significant gap - No evidence of gender pay discrimination, the gap is likely due to random chance',unsafe_allow_html=True)
             metric_net_gap_3.write('As a precaution, you can routinely repeat this analysis to monitor the pay gap. An alternative is to consider completely closing the pay gap to zero.')                
-
+  
         # Show Ethnicity Gap
         main_page.markdown("""---""")
         metric_eth_gap_1, metric_eth_gap_2, metric_eth_gap_3 = main_page.columns((1, 1.1, 1.4))            
         metric_eth_gap_1.markdown("<h1 style='text-align: left; vertical-align: bottom; font-size: 150%; color: #3498DB; opacity: 0.7'> Ethnicity Gap </h1>", unsafe_allow_html=True)
         metric_eth_gap_1.plotly_chart(fig_eth_bar, use_container_width=True)
-
+        
         metric_eth_gap_2.markdown("<h1 style='text-align: left; vertical-align: bottom;color: #3498DB; font-size: 150%; opacity: 0.7'>Benchmark</h1>", unsafe_allow_html=True)
         metric_eth_gap_2.write("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 110%; opacity: 0.7'> 🌐 -10% ~ 5% </h1>" "Pay gap measures for every dollar paid to ethnic majority, how much (less) or more goes to ethnicity minority. For example pay gap at -10% means that on average black are paid 10% less compared to white all else equal. In US, ethnicity gap typically ranges between -10% and +5%. ", unsafe_allow_html=True)    
-
+        
         num_eth_sig = df_result_eth['STAT_COUNT'].sum()
         # num_gender_sig = 0
         metric_eth_gap_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: #3498DB; font-size: 150%; opacity: 0.7'>Observation</h1>", unsafe_allow_html=True)
@@ -1138,8 +1046,8 @@ def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_
             metric_eth_gap_3.write('There is no negative statistically significant ethnicity pay gap shown in the chart. A significant ethnicity pay gap means - we are more than 95% certain that the gap exists after incorporates all of the legitimate determinants of pay (such as differences of skill, effort, and responsibility). From a legal perspective:',unsafe_allow_html=True) 
             metric_eth_gap_3.write('* Statistically significant gap - Strong evidence of ethnicity pay discrimination' +'\n'+'* Non statistically significant gap - No evidence of gender pay discrimination, the gap is likely due to random chance',unsafe_allow_html=True)
             metric_eth_gap_3.write('As a precaution, you can routinely repeat this analysis to monitor the pay gap. An alternative is to consider completely closing the pay gap to zero.')        
-
-
+    
+    
 #         main_page.markdown("""---""")
 #         metric_eth_gap_1, metric_eth_gap_2, metric_eth_gap_3 = main_page.columns((1, 1.25, 1.25))            
 #         metric_eth_gap_1.markdown("<h1 style='text-align: left; vertical-align: bottom; font-size: 150%; color: #3498DB; opacity: 0.7'> Ethnicity Gap </h1>", unsafe_allow_html=True)
@@ -1148,21 +1056,21 @@ def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_
 #         # metric_net_gap_1.plotly_chart(fig_net_gender_gap, use_container_width=True)
 #         metric_eth_gap_1.plotly_chart(fig_eth_bar, use_container_width=True)
 #         # metric_net_gap_1.plotly_chart(fig_eth_bar, use_container_width=True)
-
+       
 #         # with metric_net_gap_1:
 #         #     gender_gap_options = get_gender_gap_option(female_coff)
 #         #     st_echarts(options=gender_gap_options,height="200px")
-
+        
 #         metric_eth_gap_2.write("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 110%; opacity: 0.7'> 🌐 > -10% </h1>" "For example pay gap at -10% means that on average black are paid 10% less compared to white. In US, ethnicity gender gap varies between -10% and +5%.", unsafe_allow_html=True)
 #         # metric_eth_gap_2.write('#')
 #         metric_eth_gap_2.write('<font color=Orange> **Red** </font>'+' bar means the pay gap is statistical significant.  A significant ethnicity pay gap indicates over 95% certain that gap exists after incorporates all of the legitimate determinants of pay (such as differences of skill, effort, and responsibility). From a legal perspective, it is used by courts to justify ethnicity pay discrimination.', unsafe_allow_html=True)
-
+        
 #         # metric_net_gap_2.markdown('<font color=Orange> **Red** </font>'+' bar indicates statisical significant finding', unsafe_allow_html=True)
 
 #         metric_eth_gap_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: #3498DB; font-size: 150%; opacity: 0.7'>Observation</h1>", unsafe_allow_html=True)
 # #         female_pvalue = 0.04
 # #         female_coff = 0.02
-
+        
 #         print(female_coff)
 #         print(female_pvalue)
 #         if female_pvalue>0.05:
@@ -1210,7 +1118,7 @@ def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_
     'white-space': 'pre-wrap'})
 
         main_page.markdown("<h1 style='text-align: left; vertical-align: bottom;color: #3498DB; font-size: 150%; opacity: 0.7'>Remediation Scenarios</h1>", unsafe_allow_html=True)
-
+        
         # Download individual employee recommendation
         if reme_download_flag == 1:
             output_reme = BytesIO()
@@ -1231,11 +1139,11 @@ def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_
 
             writer_reme.save()
             processed_reme = output_reme.getvalue()
-
+            
             # main_page.download_button(label='💰 Download Salary Adjustment',data = processed_reme,file_name= 'Salary Adjustment.xlsx')
             reme_col1, reme_col2 = main_page.columns((1, 4))
             reme_col1.markdown("🖱️ 'Save link as...'")
             reme_col2.markdown(get_excel_file_downloader_html(processed_reme, 'Salary Adjustment.xlsx'), unsafe_allow_html=True)
-
+        
         main_page.write(styler.to_html(), unsafe_allow_html=True)
         st.stop()

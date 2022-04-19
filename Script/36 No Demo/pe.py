@@ -81,24 +81,22 @@ st.markdown(hide_menu_style, unsafe_allow_html=True)
 
 # st.sidebar.markdown("""---""")
 
-# if "demo_box" not in st.session_state:
-#     st.session_state.demo_box = False
-
 st.sidebar.header(' 🎯 Start here')
-demo_check = st.sidebar.checkbox('See Demo', key='demo_box')
 
 # Step 1: Download Template
-# st.sidebar.markdown("Step 1: 🖱️ 'Save link as...'")
-# st.sidebar.markdown(get_binary_file_downloader_html(file_path, 'Download Instruction and Data Template'), unsafe_allow_html=True)
+st.sidebar.markdown("Step 1: 🖱️ 'Save link as...'")
+st.sidebar.markdown(get_binary_file_downloader_html(file_path, 'Download Instruction and Data Template'), unsafe_allow_html=True)
 
 # Step 2: Upload File
-if demo_check==False:
-    st.sidebar.markdown("Step 1: 🖱️ 'Save link as...'")
-    st.sidebar.markdown(get_binary_file_downloader_html(file_path, 'Download Instruction and Data Template'), unsafe_allow_html=True)
-    uploaded_file = st.sidebar.file_uploader('Step 2: Upload Data Template', type=['xlsx'])
-else:
-    st.sidebar.write('Please clear the "See Demo" checkbox to start your analysis.')
-    uploaded_file = None
+uploaded_file = st.sidebar.file_uploader('Step 2: Upload Data Template', type=['xlsx'])
+        
+#         if m_col1_but:
+#             # analysis(df_submit = None, run_demo = True, file_path = file_path, display_path = display_path, main_page = main_page, main_page_info = main_page_info, ci = ci)
+#             analysis(df_submit = None, run_demo = True, file_path = file_path, display_path = display_path, main_page = main_page, main_page_info = main_page_info)
+            
+#         if m_col2_but:
+#             # main_page.empty()
+#             st.experimental_rerun()
 
 # Step 3: Check empty columns
 # st.sidebar.write('Step 3: Review the output in the main panel')
@@ -124,15 +122,22 @@ else:
 # if ((uploaded_file is not None)):
 #     submit_butt = st.sidebar.button("Submit")
 
-# st.sidebar.write('Step 3: Review the output in the main panel')
-# st.sidebar.write('If you wish to launch your data after the demonstration, please uncheck the "See Demo" box.')
+st.sidebar.write('Step 3: Review the output in the main panel')
 
 st.sidebar.markdown("""---""")
-
-# m_col1,m_col2 = st.sidebar.columns((1, 1))
-# m_col1_but = m_col1.button('See Demo')
-# m_col2_but = m_col2.button('Close Demo')
+m_col1,m_col2 = st.sidebar.columns((1, 1))
+m_col1_but = m_col1.button('See Demo')
+m_col2_but = m_col2.button('Close Demo')
     
+show_demo = False
+if m_col1_but:
+    show_demo = True
+    uploaded_file = file_path
+    st.write('demo now')
+    st.write(show_demo)
+elif m_col2_but:
+    st.experimental_rerun()
+
 # st.sidebar.write('Final submit' + str(submit_butt))
 
 # option_menu
@@ -170,15 +175,12 @@ with main_page.container():
     if uploaded_file is not None:
         main_page_info.info('Running input file.')
         # analysis(df_submit = uploaded_file, run_demo = False, file_path = file_path, display_path = display_path, main_page = main_page, main_page_info = main_page_info, ci = ci)
-        analysis(df_submit = uploaded_file, run_demo = False, file_path = file_path, display_path = display_path, main_page = main_page, main_page_info = main_page_info)
-        # st.session_state["demo_box"] = False
+        if show_demo:
+            analysis(df_submit = None, run_demo = True, file_path = file_path, display_path = display_path, main_page = main_page, main_page_info = main_page_info)
+        else:
+            analysis(df_submit = uploaded_file, run_demo = False, file_path = file_path, display_path = display_path, main_page = main_page, main_page_info = main_page_info)
     else:
         m_info = main_page_info.info('Awaiting the upload of the data template.')
-        if demo_check:
-            analysis(df_submit = None, run_demo = True, file_path = file_path, display_path = display_path, main_page = main_page, main_page_info = main_page_info)
-        # else:
-        #     st.experimental_rerun()
-        
 #         m_col1,m_col2,t1 = main_page.columns((1, 1, 2))
         
 #         m_col1_but = m_col1.button('See Demo')
