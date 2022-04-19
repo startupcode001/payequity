@@ -25,7 +25,7 @@ from pathlib import Path
 import xlsxwriter
 from io import BytesIO
 
-from streamlit_option_menu import option_menu
+# from streamlit_option_menu import option_menu
 
 # Set Path
 st.set_page_config(layout="wide")
