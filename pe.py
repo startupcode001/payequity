@@ -38,19 +38,18 @@ with open(style_path) as f:
 
 # Set sidebar size
 st.markdown(
-"""
-<style>
-[data-testid="stSidebar"][aria-expanded="true"] > div:first-child {
-width: 260px;
-}
-[data-testid="stSidebar"][aria-expanded="false"] > div:first-child {
-width: 260px;
-margin-left: -260px;
-}
-</style>
-""",
-unsafe_allow_html=True
-)
+     """
+     <style>
+     [data-testid="stSidebar"][aria-expanded="true"] > div:first-child {
+         width: 260px;
+       }
+    [data-testid="stSidebar"][aria-expanded="false"] > div:first-child {
+           width: 260px;
+           margin-left: -260px;
+       }
+    </style>
+    """,unsafe_allow_html=True)
+
 
 # Set Styles
 # metric = st.markdown("""
@@ -109,7 +108,7 @@ if demo_check==False:
     st.sidebar.markdown(get_binary_file_downloader_html(file_path, 'Instruction and Template'), unsafe_allow_html=True)
     uploaded_file = st.sidebar.file_uploader('Step 2: Upload Data Template', type=['xlsx'])
 else:
-    st.sidebar.caption('Please clear the box to launch a new run.')
+    st.sidebar.caption('Clear the box to launch a new run.')
     uploaded_file = None
 
 st.sidebar.markdown("""---""")
