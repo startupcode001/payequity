@@ -36,6 +36,22 @@ style_path = Path(__file__).parents[0].__str__()+'/Style/style.css'
 with open(style_path) as f:
     st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
+# Set sidebar size
+st.markdown(
+"""
+<style>
+[data-testid="stSidebar"][aria-expanded="true"] > div:first-child {
+width: 260px;
+}
+[data-testid="stSidebar"][aria-expanded="false"] > div:first-child {
+width: 260px;
+margin-left: -260px;
+}
+</style>
+""",
+unsafe_allow_html=True
+)
+
 # Set Styles
 # metric = st.markdown("""
 #     <style>
@@ -90,7 +106,7 @@ demo_check = st.sidebar.checkbox('See Demo', key='demo_box')
 # Step 2: Upload File
 if demo_check==False:
     st.sidebar.markdown("Step 1: 🖱️ 'Save link as...'")
-    st.sidebar.markdown(get_binary_file_downloader_html(file_path, 'Download Instruction and Data Template'), unsafe_allow_html=True)
+    st.sidebar.markdown(get_binary_file_downloader_html(file_path, 'Instruction and Template'), unsafe_allow_html=True)
     uploaded_file = st.sidebar.file_uploader('Step 2: Upload Data Template', type=['xlsx'])
 else:
     st.sidebar.caption('Please clear the box to launch a new run.')
