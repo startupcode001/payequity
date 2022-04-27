@@ -93,7 +93,7 @@ if demo_check==False:
     st.sidebar.markdown(get_binary_file_downloader_html(file_path, 'Download Instruction and Data Template'), unsafe_allow_html=True)
     uploaded_file = st.sidebar.file_uploader('Step 2: Upload Data Template', type=['xlsx'])
 else:
-    st.sidebar.caption('Please clear the box to launch a new run.')
+    st.sidebar.caption('Please clear the "See Demo" checkbox to start your analysis.')
     uploaded_file = None
 
 st.sidebar.markdown("""---""")

@@ -1098,39 +1098,44 @@ def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_
         # Run Remediation Messages
         
         scenario = ['A','B','C']
-        action = ['✔️ Mitigate underpay risk\n','✔️ Mitigate underpay risk \n'+'✔️ Close the pay gap to statistically insignificant','✔️ Mitigate underpay risk \n'+'✔️ Close the pay gap to zero']
+        
+        action_A = ['✔️','','']
+        action_B = ['✔️','✔️','']
+        action_C = ['✔️','✔️','✔️']
         
         # budget = ['0',message_budget_pv,message_budget_gap]
         
-        before_gap = ''
-        for index, row in df_initial_result.iterrows():
-            before_gap = before_gap + row["CONTENT_DISPLAY"] + ': ' + str(f'{row["COEF"]*100:.1f}%') +"\n" 
-        
-        A_headcount = str(A_seek_adj_count)+"\n"+'('+str(f'{A_seek_adj_count_pct*100:.1f}%')+' headcount)'
-        A_budget = str(locale.format("%.2f", round(A_seek_budget/1000000,2), grouping=True))+' M'+"\n"+'('+str(f'{A_seek_adj_budget_pct*100:.1f}%')+' salary)'
-        
-        A_after_gap = ''
-        for index, row in A_df_result.iterrows():
-            A_after_gap = A_after_gap + row["CONTENT_DISPLAY"] + ': ' + str(f'{row["COEF"]*100:.1f}%') +"\n" 
-        
-        B_headcount = str(B_seek_adj_count)+"\n"+'('+str(f'{B_seek_adj_count_pct*100:.1f}%')+' headcount)'
-        B_budget = str(locale.format("%.2f", round(B_seek_budget/1000000,2), grouping=True))+' M'+"\n"+'('+str(f'{B_seek_adj_budget_pct*100:.1f}%')+' salary)'
-        B_after_gap = ''
-        for index, row in B_df_result.iterrows():
-            B_after_gap = B_after_gap + row["CONTENT_DISPLAY"] + ': ' + str(f'{row["COEF"]*100:.1f}%') +"\n" 
-        
-        headcount = [A_headcount,B_headcount,'']
-        budget = [A_budget,B_budget,'']
-        before_gap = [before_gap,before_gap,before_gap]
-        after_gap = [A_after_gap,B_after_gap,'']
+        employee = ['','','']
+        budget = ['','','']
+        before_gap = ['','','']
+        after_gap = ['','','']
         
         df_reme = pd.DataFrame({'Scenario': scenario, 
-                                'How do I do this?':action,
-                                'Impacted Employee': headcount,
+                                'How do I do this?':
+                                
+                                'Remediate outliers': action_A, 
+                                'Close gap to statistically insignificant': action_B,
+                                'Close gap to zero': action_C,
+                                'Adjustment Headcount': employee,
                                 'Adjustment Budget': budget, 
                                 'Gap before adjustment': before_gap,
                                 'Gap after adjustment': after_gap})
         
+        # df_reme = pd.DataFrame({'Scenario': scenario, 'How do I do this?': action, 'What is my budget?': budget, 'What is the gap after adjustment?': net_gap})
+        
+        
+        # df_reme = pd.DataFrame({'Scenario': scenario, 'How do I do this?': action, 'What is my budget?': budget, 'What is the gap after adjustment?': net_gap})
+        
+#         action = ['🏁 No change','✔️ Mitigate legal risk \n'+'✔️ Reduce the gender gap to a statistical insignificant level.','✔️ Mitigate legal risk \n'+'✔️ Completely close gender gap \n'+'✔️ Become a market leader (Top 1%)\n']
+#         budget = ['0',message_budget_pv,message_budget_gap]
+
+#         if abs(seek_resulting_gap_gap)<0.0005:
+#                 seek_resulting_gap_gap = 0
+#         net_gap = [female_coff,seek_resulting_gap_pv,seek_resulting_gap_gap]
+#         net_gap = [f'{i*100:.1f}%' for i in net_gap]
+
+#         df_reme = pd.DataFrame({'Scenario': scenario, 'How do I do this?': action, 'What is my budget?': budget, 'What is the gap after adjustment?': net_gap})
+
         cell_hover = {  # for row hover use <tr> instead of <td>
                         'selector': 'td:hover',
                         'props': [('background-color', 'lightgrey')]
@@ -1145,23 +1150,6 @@ def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_
                     }
         styler = df_reme.style.hide_index().set_table_styles([cell_hover, index_names, headers], overwrite=False).set_properties(**{
     'white-space': 'pre-wrap'})  
-        
-        # df_reme = pd.DataFrame({'Scenario': scenario, 'How do I do this?': action, 'What is my budget?': budget, 'What is the gap after adjustment?': net_gap})
-
-#         if B_seek_budget> 1000000:
-#             B_budget = str(locale.format("%.2f", round(B_seek_budget/1000000,2), grouping=True))+' M'+"\n"+'('+str(f'{B_seek_adj_budget_pct*100:.1f}%')+' salary)'
-#         else:
-#              B_budget = str(locale.format("%d", round(B_seek_budget/1000,0), grouping=True))+' K'+"\n"+'('+str(f'{B_seek_adj_budget_pct*100:.1f}%')+' salary)'
-        
-#         action = ['🏁 No change','✔️ Mitigate legal risk \n'+'✔️ Reduce the gender gap to a statistical insignificant level.','✔️ Mitigate legal risk \n'+'✔️ Completely close gender gap \n'+'✔️ Become a market leader (Top 1%)\n']
-#         budget = ['0',message_budget_pv,message_budget_gap]
-
-#         if abs(seek_resulting_gap_gap)<0.0005:
-#                 seek_resulting_gap_gap = 0
-#         net_gap = [female_coff,seek_resulting_gap_pv,seek_resulting_gap_gap]
-#         net_gap = [f'{i*100:.1f}%' for i in net_gap]
-
-#         df_reme = pd.DataFrame({'Scenario': scenario, 'How do I do this?': action, 'What is my budget?': budget, 'What is the gap after adjustment?': net_gap})
 
 #         message_budget_pv = np.nan
 #         if seek_pass_pv == False:
