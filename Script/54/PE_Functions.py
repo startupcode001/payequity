@@ -1034,136 +1034,135 @@ def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_
         if female_pvalue<0.05:
             gender_gap_stats = 'statistically significant'
 
-        with st.spinner('Running Remediation Scenarios'):
-    # Run Scenario A ---------------------------------------------------------------------------------------------------------------------
-            m_info = main_page_info.info('Scenario A: Mitigate Outliers')
-            A_seek_outlier_df, A_seek_budget, A_seek_adj_budget_pct, A_seek_adj_count, A_seek_adj_count_pct, A_df_result = reme_outlier_seek(df,budget_df,X_full,ci)        
-            A_seek_outlier_df.to_excel('df_A.xlsx')
-            A_df_result.to_excel('df_A_result.xlsx')
+# Run Scenario A ---------------------------------------------------------------------------------------------------------------------
+        m_info = main_page_info.info('Running Remediation Scenario A: Mitigate Outliers')
+        A_seek_outlier_df, A_seek_budget, A_seek_adj_budget_pct, A_seek_adj_count, A_seek_adj_count_pct, A_df_result = reme_outlier_seek(df,budget_df,X_full,ci)        
+        A_seek_outlier_df.to_excel('df_A.xlsx')
+        A_df_result.to_excel('df_A_result.xlsx')
+        
+# Run Scenario B - Reme Pvalue = 5.5% -------------------------------------------------------------------------------------------------
+        df_result = copy.deepcopy(A_df_result)
+        seek_budget_df_pv = copy.deepcopy(A_seek_outlier_df)
+        
+        count_loop = 0
+        count_reme = 0
+        reme_exit = 0
+        
+        while df_result['STAT_COUNT'].sum()>0:
+            # print('count_loop: '+str(count_loop))
+            df_result_loop = zip(df_result['CONTENT'].to_list(), df_result['FEATURE'].to_list(), df_result['COEF'].to_list(), df_result['PVALUE'].to_list())
+            
+            for protect_group_class, project_group_feature,init_current_gap,init_current_pvalue in df_result_loop:
+                # print('count_reme: '+str(count_reme))
+                m_info = main_page_info.info('Running Remediation Scenario B: Close Gap to Statistically Insignificant - '+ project_group_feature.title() + ' : '+ protect_group_class.title())
+                if count_reme == 0:
+                    current_gap = init_current_gap
+                    current_pvalue = init_current_pvalue
+                else:
+                    current_gap = df_result[df_result['CONTENT']==protect_group_class]['COEF'].values[0]
+                    current_pvalue = df_result[df_result['CONTENT']==protect_group_class]['PVALUE'].values[0]
 
-    # Run Scenario B - Reme Pvalue = 5.5% -------------------------------------------------------------------------------------------------
-            df_result = copy.deepcopy(A_df_result)
-            seek_budget_df_pv = copy.deepcopy(A_seek_outlier_df)
-
-            count_loop = 0
-            count_reme = 0
-            reme_exit = 0
-
-            while df_result['STAT_COUNT'].sum()>0:
-                # print('count_loop: '+str(count_loop))
-                df_result_loop = zip(df_result['CONTENT'].to_list(), df_result['FEATURE'].to_list(), df_result['COEF'].to_list(), df_result['PVALUE'].to_list())
-
-                for protect_group_class, project_group_feature,init_current_gap,init_current_pvalue in df_result_loop:
-                    # print('count_reme: '+str(count_reme))
-                    main_page_infom_info = main_page_info.info('Scenario B: Close Gap to Statistically Insignificant - '+ project_group_feature.title() + ' : '+ protect_group_class.title())
-                    if count_reme == 0:
-                        current_gap = init_current_gap
-                        current_pvalue = init_current_pvalue
-                    else:
-                        current_gap = df_result[df_result['CONTENT']==protect_group_class]['COEF'].values[0]
-                        current_pvalue = df_result[df_result['CONTENT']==protect_group_class]['PVALUE'].values[0]
-
-                    seek_budget_df_pv,seek_budget_pv,seek_resulting_gap_pv,seek_resulting_pvalues_pv,seek_adj_count_pv, seek_adj_budget_pct_pv,seek_pass_pv, seek_success_pv, df_result = reme_pvalue_seek(df,seek_budget_df_pv,X_full, project_group_feature=project_group_feature, protect_group_class=protect_group_class, seek_goal=seek_goal_pv, current_gap = current_gap, current_pvalue = current_pvalue, input_df_result = df_result, count_loop = count_loop, search_step = -0.005)
-
-                    pv_budget_name = 'pv_budget_'+str(count_loop)+'_'+protect_group_class+'.xlsx'
-                    pv_result_name = 'pv_result_'+str(count_loop)+'_'+protect_group_class+'.xlsx'
-
-                    seek_budget_df_pv.to_excel(pv_budget_name)
-                    df_result.to_excel(pv_result_name)
-
-                    count_reme = count_reme + 1
-                    print('count_reme: '+str(count_reme))
-                    if df_result['STAT_COUNT'].sum()==0:
-                        reme_exit = 1
-                        break
-                if reme_exit == 1:
+                seek_budget_df_pv,seek_budget_pv,seek_resulting_gap_pv,seek_resulting_pvalues_pv,seek_adj_count_pv, seek_adj_budget_pct_pv,seek_pass_pv, seek_success_pv, df_result = reme_pvalue_seek(df,seek_budget_df_pv,X_full, project_group_feature=project_group_feature, protect_group_class=protect_group_class, seek_goal=seek_goal_pv, current_gap = current_gap, current_pvalue = current_pvalue, input_df_result = df_result, count_loop = count_loop, search_step = -0.005)
+                
+                pv_budget_name = 'pv_budget_'+str(count_loop)+'_'+protect_group_class+'.xlsx'
+                pv_result_name = 'pv_result_'+str(count_loop)+'_'+protect_group_class+'.xlsx'
+                
+                seek_budget_df_pv.to_excel(pv_budget_name)
+                df_result.to_excel(pv_result_name)
+                
+                count_reme = count_reme + 1
+                print('count_reme: '+str(count_reme))
+                if df_result['STAT_COUNT'].sum()==0:
+                    reme_exit = 1
                     break
-                count_loop = count_loop +1
-                print('count_loop: '+str(count_loop))
+            if reme_exit == 1:
+                break
+            count_loop = count_loop +1
+            print('count_loop: '+str(count_loop))
+        
+        # Summerlize Scenario B output
+        scenario_ind_name = 'SCENARIO_B_EMPLOYEE'
+        scenario_increase_name = 'SCENARIO_B_BUDGET'
+        scenario_adjusted_name = 'SCENARIO_B_ADJUSTED_SALARY'
+        scenario_adjusted_log_name = 'LOG_SCENARIO_B_ADJUSTED_SALARY' 
+        
+        seek_budget_df_pv[scenario_adjusted_log_name] = seek_budget_df_pv['original']
+        seek_budget_df_pv[scenario_adjusted_name] = np.trunc(np.exp(seek_budget_df_pv['original']))
+        seek_budget_df_pv[scenario_increase_name] = seek_budget_df_pv[scenario_adjusted_name] - np.trunc(np.exp(seek_budget_df_pv['original_baseline']))
+        seek_budget_df_pv[scenario_ind_name] = 0
+        seek_budget_df_pv.loc[seek_budget_df_pv[scenario_adjusted_log_name]>seek_budget_df_pv['original_baseline'],scenario_ind_name] = 1
+        
+        B_seek_pv_df = copy.deepcopy(seek_budget_df_pv)
+        B_seek_budget = np.trunc(np.sum(B_seek_pv_df[scenario_increase_name]))
+        B_seek_adj_budget_pct = B_seek_budget/np.sum(np.exp(B_seek_pv_df['original_baseline']))
+        B_seek_adj_count = np.sum(B_seek_pv_df[scenario_ind_name])
+        B_seek_adj_count_pct = B_seek_adj_count/B_seek_pv_df.shape[0]
+        B_df_result = copy.deepcopy(df_result)
 
-            # Summerlize Scenario B output
-            scenario_ind_name = 'SCENARIO_B_EMPLOYEE'
-            scenario_increase_name = 'SCENARIO_B_BUDGET'
-            scenario_adjusted_name = 'SCENARIO_B_ADJUSTED_SALARY'
-            scenario_adjusted_log_name = 'LOG_SCENARIO_B_ADJUSTED_SALARY' 
+        B_seek_pv_df.to_excel('df_B.xlsx')
+        B_df_result.to_excel('df_B_result.xlsx')
+        
+# Run Scenario C - Gap value = 0% -------------------------------------------------------------------------------------------------
+        df_result = copy.deepcopy(A_df_result)
+        seek_budget_df_gap = copy.deepcopy(A_seek_outlier_df)
+        
+        count_loop = 0
+        count_reme = 0
+        reme_exit = 0
+        
+        while df_result['GAP_COUNT'].sum()>0:
+            # print('gap_count_loop: '+str(count_loop))
+            df_result_loop = zip(df_result['CONTENT'].to_list(), df_result['FEATURE'].to_list(), df_result['COEF'].to_list(), df_result['PVALUE'].to_list())
+            
+            for protect_group_class, project_group_feature,init_current_gap,init_current_pvalue in df_result_loop:
+                # print('count_reme: '+str(count_reme))
+                m_info = main_page_info.info('Running Remediation Scenario C: Close Gap to Zero - '+ project_group_feature.title() + ' : '+ protect_group_class.title())
+                if count_reme == 0:
+                    current_gap = init_current_gap
+                    current_pvalue = init_current_pvalue
+                else:
+                    current_gap = df_result[df_result['CONTENT']==protect_group_class]['COEF'].values[0]
+                    current_pvalue = df_result[df_result['CONTENT']==protect_group_class]['PVALUE'].values[0]
 
-            seek_budget_df_pv[scenario_adjusted_log_name] = seek_budget_df_pv['original']
-            seek_budget_df_pv[scenario_adjusted_name] = np.trunc(np.exp(seek_budget_df_pv['original']))
-            seek_budget_df_pv[scenario_increase_name] = seek_budget_df_pv[scenario_adjusted_name] - np.trunc(np.exp(seek_budget_df_pv['original_baseline']))
-            seek_budget_df_pv[scenario_ind_name] = 0
-            seek_budget_df_pv.loc[seek_budget_df_pv[scenario_adjusted_log_name]>seek_budget_df_pv['original_baseline'],scenario_ind_name] = 1
-
-            B_seek_pv_df = copy.deepcopy(seek_budget_df_pv)
-            B_seek_budget = np.trunc(np.sum(B_seek_pv_df[scenario_increase_name]))
-            B_seek_adj_budget_pct = B_seek_budget/np.sum(np.exp(B_seek_pv_df['original_baseline']))
-            B_seek_adj_count = np.sum(B_seek_pv_df[scenario_ind_name])
-            B_seek_adj_count_pct = B_seek_adj_count/B_seek_pv_df.shape[0]
-            B_df_result = copy.deepcopy(df_result)
-
-            B_seek_pv_df.to_excel('df_B.xlsx')
-            B_df_result.to_excel('df_B_result.xlsx')
-
-    # Run Scenario C - Gap value = 0% -------------------------------------------------------------------------------------------------
-            df_result = copy.deepcopy(A_df_result)
-            seek_budget_df_gap = copy.deepcopy(A_seek_outlier_df)
-
-            count_loop = 0
-            count_reme = 0
-            reme_exit = 0
-
-            while df_result['GAP_COUNT'].sum()>0:
-                # print('gap_count_loop: '+str(count_loop))
-                df_result_loop = zip(df_result['CONTENT'].to_list(), df_result['FEATURE'].to_list(), df_result['COEF'].to_list(), df_result['PVALUE'].to_list())
-
-                for protect_group_class, project_group_feature,init_current_gap,init_current_pvalue in df_result_loop:
-                    # print('count_reme: '+str(count_reme))
-                    m_info = main_page_info.info('Scenario C: Close Gap to Zero - '+ project_group_feature.title() + ' : '+ protect_group_class.title())
-                    if count_reme == 0:
-                        current_gap = init_current_gap
-                        current_pvalue = init_current_pvalue
-                    else:
-                        current_gap = df_result[df_result['CONTENT']==protect_group_class]['COEF'].values[0]
-                        current_pvalue = df_result[df_result['CONTENT']==protect_group_class]['PVALUE'].values[0]
-
-                    seek_budget_df_gap,seek_budget_gap,seek_resulting_gap_gap,seek_resulting_pvalues_gap,seek_adj_count_gap, seek_adj_budget_pct_gap,seek_pass_gap, seek_success_gap, df_result = reme_gap_seek(df,seek_budget_df_gap,X_full, project_group_feature=project_group_feature, protect_group_class=protect_group_class, seek_goal=seek_goal_gap, current_gap = current_gap, current_pvalue = current_pvalue, input_df_result = df_result, count_loop = count_loop, search_step = -0.005)
-
-                    gap_budget_name = 'gap_budget_'+str(count_loop)+'_'+protect_group_class+'.xlsx'
-                    gap_result_name = 'gap_result_'+str(count_loop)+'_'+protect_group_class+'.xlsx'
-
-                    seek_budget_df_gap.to_excel(gap_budget_name)
-                    df_result.to_excel(gap_result_name)
-
-                    count_reme = count_reme + 1
-                    print('count_reme: '+str(count_reme))
-                    if df_result['GAP_COUNT'].sum()==0:
-                        reme_exit = 1
-                        break
-                if reme_exit == 1:
+                seek_budget_df_gap,seek_budget_gap,seek_resulting_gap_gap,seek_resulting_pvalues_gap,seek_adj_count_gap, seek_adj_budget_pct_gap,seek_pass_gap, seek_success_gap, df_result = reme_gap_seek(df,seek_budget_df_gap,X_full, project_group_feature=project_group_feature, protect_group_class=protect_group_class, seek_goal=seek_goal_gap, current_gap = current_gap, current_pvalue = current_pvalue, input_df_result = df_result, count_loop = count_loop, search_step = -0.005)
+                
+                gap_budget_name = 'gap_budget_'+str(count_loop)+'_'+protect_group_class+'.xlsx'
+                gap_result_name = 'gap_result_'+str(count_loop)+'_'+protect_group_class+'.xlsx'
+                
+                seek_budget_df_gap.to_excel(gap_budget_name)
+                df_result.to_excel(gap_result_name)
+                
+                count_reme = count_reme + 1
+                print('count_reme: '+str(count_reme))
+                if df_result['GAP_COUNT'].sum()==0:
+                    reme_exit = 1
                     break
-                count_loop = count_loop +1
-                print('gap_count_loop: '+str(count_loop))
+            if reme_exit == 1:
+                break
+            count_loop = count_loop +1
+            print('gap_count_loop: '+str(count_loop))
+        
+        # Summerlize Scenario C output
+        scenario_ind_name = 'SCENARIO_C_EMPLOYEE'
+        scenario_increase_name = 'SCENARIO_C_BUDGET'
+        scenario_adjusted_name = 'SCENARIO_C_ADJUSTED_SALARY'
+        scenario_adjusted_log_name = 'LOG_SCENARIO_C_ADJUSTED_SALARY' 
+        
+        seek_budget_df_gap[scenario_adjusted_log_name] = seek_budget_df_gap['original']
+        seek_budget_df_gap[scenario_adjusted_name] = np.trunc(np.exp(seek_budget_df_gap['original']))
+        seek_budget_df_gap[scenario_increase_name] = seek_budget_df_gap[scenario_adjusted_name] - np.trunc(np.exp(seek_budget_df_gap['original_baseline']))
+        seek_budget_df_gap[scenario_ind_name] = 0
+        seek_budget_df_gap.loc[seek_budget_df_gap[scenario_adjusted_log_name]>seek_budget_df_gap['original_baseline'],scenario_ind_name] = 1
+        
+        C_seek_gap_df = copy.deepcopy(seek_budget_df_gap)
+        C_seek_budget = np.trunc(np.sum(C_seek_gap_df[scenario_increase_name]))
+        C_seek_adj_budget_pct = C_seek_budget/np.sum(np.exp(C_seek_gap_df['original_baseline']))
+        C_seek_adj_count = np.sum(C_seek_gap_df[scenario_ind_name])
+        C_seek_adj_count_pct = C_seek_adj_count/C_seek_gap_df.shape[0]
+        C_df_result = copy.deepcopy(df_result)
 
-            # Summerlize Scenario C output
-            scenario_ind_name = 'SCENARIO_C_EMPLOYEE'
-            scenario_increase_name = 'SCENARIO_C_BUDGET'
-            scenario_adjusted_name = 'SCENARIO_C_ADJUSTED_SALARY'
-            scenario_adjusted_log_name = 'LOG_SCENARIO_C_ADJUSTED_SALARY' 
-
-            seek_budget_df_gap[scenario_adjusted_log_name] = seek_budget_df_gap['original']
-            seek_budget_df_gap[scenario_adjusted_name] = np.trunc(np.exp(seek_budget_df_gap['original']))
-            seek_budget_df_gap[scenario_increase_name] = seek_budget_df_gap[scenario_adjusted_name] - np.trunc(np.exp(seek_budget_df_gap['original_baseline']))
-            seek_budget_df_gap[scenario_ind_name] = 0
-            seek_budget_df_gap.loc[seek_budget_df_gap[scenario_adjusted_log_name]>seek_budget_df_gap['original_baseline'],scenario_ind_name] = 1
-
-            C_seek_gap_df = copy.deepcopy(seek_budget_df_gap)
-            C_seek_budget = np.trunc(np.sum(C_seek_gap_df[scenario_increase_name]))
-            C_seek_adj_budget_pct = C_seek_budget/np.sum(np.exp(C_seek_gap_df['original_baseline']))
-            C_seek_adj_count = np.sum(C_seek_gap_df[scenario_ind_name])
-            C_seek_adj_count_pct = C_seek_adj_count/C_seek_gap_df.shape[0]
-            C_df_result = copy.deepcopy(df_result)
-
-            C_seek_gap_df.to_excel('df_C.xlsx')
-            C_df_result.to_excel('df_C_result.xlsx')
+        C_seek_gap_df.to_excel('df_C.xlsx')
+        C_df_result.to_excel('df_C_result.xlsx')
 
 # Create download file for remediation---------------------------------------------------------------------------------------------------
         reme_download_flag = 0
@@ -1197,9 +1196,7 @@ def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_
 # Run Remediation Messages ----------------------------------------------------------------------------------------------------------------
         
         scenario = ['A','B','C']
-        action = ['Increase salary for employees who are paid less than their peers regardless of gender or ethnicity.\n'+'✔️ Mitigate underpay risk\n'+'⚠️ Does not close gender or ethnicity gaps to be statistically insignificant or eliminated to zero.\n',
-                  'Increase salary for gender or ethnicity groups that are lower paid than their peers until the pay gaps are statistically insignificant. \n'+'✔️ Mitigate underpay risk \n'+'✔️ Close the pay gap to statistically insignificant',
-                  'Increase salary for gender or ethnicity groups that are lower paid than their peers until the pay gaps are zero. \n'+'✔️ Mitigate underpay risk \n'+'✔️ Close the pay gap to zero']
+        action = ['✔️ Mitigate underpay risk\n','✔️ Mitigate underpay risk \n'+'✔️ Close the pay gap to statistically insignificant','✔️ Mitigate underpay risk \n'+'✔️ Close the pay gap to zero']
                 
         before_gap = ''
         for index, row in df_initial_result.iterrows():
@@ -1231,8 +1228,6 @@ def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_
         before_gap = [before_gap,before_gap,before_gap]
         after_gap = [A_after_gap,B_after_gap,C_after_gap]
         
-        # pd.set_option('max_colwidth', 60)
-        
         df_reme = pd.DataFrame({'Scenario': scenario, 
                                 'Description':action,
                                 'Impacted Employee': headcount,
@@ -1254,9 +1249,250 @@ def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_
                     }
         styler = df_reme.style.hide_index().set_table_styles([cell_hover, index_names, headers], overwrite=False).set_properties(**{
     'white-space': 'pre-wrap'})  
-                
-        # df.style.set_properties(subset=['text'], **{'width': '300px'})    
+        
+        # df_reme = pd.DataFrame({'Scenario': scenario, 'How do I do this?': action, 'What is my budget?': budget, 'What is the gap after adjustment?': net_gap})
+
+#         if B_seek_budget> 1000000:
+#             B_budget = str(locale.format("%.2f", round(B_seek_budget/1000000,2), grouping=True))+' M'+"\n"+'('+str(f'{B_seek_adj_budget_pct*100:.1f}%')+' salary)'
+#         else:
+#              B_budget = str(locale.format("%d", round(B_seek_budget/1000,0), grouping=True))+' K'+"\n"+'('+str(f'{B_seek_adj_budget_pct*100:.1f}%')+' salary)'
+        
+#         action = ['🏁 No change','✔️ Mitigate legal risk \n'+'✔️ Reduce the gender gap to a statistical insignificant level.','✔️ Mitigate legal risk \n'+'✔️ Completely close gender gap \n'+'✔️ Become a market leader (Top 1%)\n']
+#         budget = ['0',message_budget_pv,message_budget_gap]
+
+#         if abs(seek_resulting_gap_gap)<0.0005:
+#                 seek_resulting_gap_gap = 0
+#         net_gap = [female_coff,seek_resulting_gap_pv,seek_resulting_gap_gap]
+#         net_gap = [f'{i*100:.1f}%' for i in net_gap]
+
+#         df_reme = pd.DataFrame({'Scenario': scenario, 'How do I do this?': action, 'What is my budget?': budget, 'What is the gap after adjustment?': net_gap})
+
+#         message_budget_pv = np.nan
+#         if seek_pass_pv == False:
+#             message_budget_pv = '0 - gender pay gap is currently not statistically significant.'
+#             message_budget_pv_overview = message_budget_pv
+#         elif (seek_pass_pv == True) and (seek_success_pv == False):
+#             message_budget_pv = 'No results found, please contact our consultant for more information.'
+#             message_budget_pv_overview = message_budget_pv
+#         else:
+#             if seek_budget_pv> 1000000:
+#                 message_budget_pv = str(locale.format("%.2f", round(seek_budget_pv/1000000,2), grouping=True))+' Million'+'\n'+'('+str(round(seek_adj_budget_pct_pv*100,0))+'% of Pay)'
+#             else:
+#                 message_budget_pv = str(locale.format("%d", round(seek_budget_pv/1000,0), grouping=True))+' K'+'\n'+'('+str(round(seek_adj_budget_pct_pv*100,0))+'% of Pay)'
+#             message_budget_pv_overview = "Raising women's pay by $"+message_budget_pv+' will reduce gap to ' + '-2.2%' + ' and become statistically insignificant.'
+
+#         message_budget_gap = np.nan
+#         if seek_pass_gap == False:
+#             message_budget_gap = '0 - Women earn more than men, so no adjustment is necessary.'
+#         elif (seek_pass_gap == True) and (seek_success_gap == False):
+#             message_budget_gap = 'No results found, please contact our consultant for more information.'
+#         else:
+#             if seek_budget_gap> 1000000:
+#                 message_budget_gap = str(locale.format("%.2f", round(seek_budget_gap/1000000,2), grouping=True))+' Million'+'\n'+'('+str(round(seek_adj_budget_pct_gap*100,2))+'% of Pay)'
+#             else:
+#                 message_budget_gap = str(locale.format("%d", round(seek_budget_gap/1000,0), grouping=True))+' K'+'\n'+'('+str(round(seek_adj_budget_pct_gap*100,2))+'% of Pay)'
+
+#         scenario = ['Current','A','B']
+#         action = ['🏁 No change','✔️ Mitigate legal risk \n'+'✔️ Reduce the gender gap to a statistical insignificant level.','✔️ Mitigate legal risk \n'+'✔️ Completely close gender gap \n'+'✔️ Become a market leader (Top 1%)\n']
+#         budget = ['0',message_budget_pv,message_budget_gap]
+
+#         if abs(seek_resulting_gap_gap)<0.0005:
+#                 seek_resulting_gap_gap = 0
+#         net_gap = [female_coff,seek_resulting_gap_pv,seek_resulting_gap_gap]
+#         net_gap = [f'{i*100:.1f}%' for i in net_gap]
+
+#         df_reme = pd.DataFrame({'Scenario': scenario, 'How do I do this?': action, 'What is my budget?': budget, 'What is the gap after adjustment?': net_gap})
+
+#         cell_hover = {  # for row hover use <tr> instead of <td>
+#                         'selector': 'td:hover',
+#                         'props': [('background-color', 'lightgrey')]
+#                     }
+#         index_names = {
+#                         'selector': '.index_name',
+#                         'props': 'font-style: italic; color: darkgrey; font-weight:normal;'
+#                     }
+#         headers = {
+#                         'selector': 'th:not(.index_name)',
+#                         'props': 'background-color: #3498DB; color: white; text-align: center; '
+#                     }
+#         styler = df_reme.style.hide_index().set_table_styles([cell_hover, index_names, headers], overwrite=False).set_properties(**{
+#     'white-space': 'pre-wrap'})        
+        
+        
+        # print('B output')
+        # print(B_seek_budget)
+        # print(B_seek_adj_budget_pct)
+        # print(B_seek_adj_count)
+        # print(B_seek_adj_count_pct)
+        
+#         df_result_loop = zip(df_initial_result['CONTENT'].to_list(), df_initial_result['FEATURE'].to_list(), df_initial_result['COEF'].to_list(), df_initial_result['PVALUE'].to_list())        
+#         seek_budget_df_pv = copy.deepcopy(budget_df)
+        
+#         count_reme = 0
+        
+#         for protect_group_class, project_group_feature,init_current_gap,init_current_pvalue in df_result_loop:
+#             m_info = main_page_info.success('Running Remediation Scenario B: Mitigate Legal Risk - '+ protect_group_class)
+#             if count_reme == 0:
+#                 current_gap = init_current_gap
+#                 current_pvalue = init_current_pvalue
+#             else:
+#                 current_gap = df_result[df_result['']==]['COEF'].values[0]
+#                 current_pvalue = df_result[df_result['']==]['PVALUE'].values[0]
             
+#             seek_budget_df_pv,seek_budget_pv,seek_resulting_gap_pv,seek_resulting_pvalues_pv,seek_adj_count_pv, seek_adj_budget_pct_pv,seek_pass_pv, seek_success_pv, df_result = reme_pvalue_seek(df,seek_budget_df_pv,X_full, project_group_feature=project_group_feature, protect_group_class=protect_group_class, seek_goal=0.07, current_gap = current_gap, current_pvalue = current_pvalue, search_step = -0.001)
+            
+            
+            # seek_budget_df_pv.to_excel('df_pv_n.xlsx')
+            # df_result.to_excel('df_pv_n_result.xlsx')
+        
+        # asdf
+        
+        # for 
+            
+#         # Run Reme Pvalue = 7%
+#         m_info = main_page_info.success('Running Remediation Scenario A: Mitigate Legal Risk')
+#         seek_budget_df_pv,seek_budget_pv,seek_resulting_gap_pv,seek_resulting_pvalues_pv,seek_adj_count_pv, seek_adj_budget_pct_pv,seek_pass_pv, seek_success_pv = reme_pvalue_seek(df,budget_df,X_full, project_group_feature='GENDER', protect_group_class='F', seek_goal=0.07, current_gap = female_coff, current_pvalue = female_pvalue, search_step = -0.001)
+#         seek_budget_df_pv.to_excel('df_pv.xlsx')
+
+#         # Run Reme Zero Gap
+#         m_info = main_page_info.success('Running Remediation Scenario B: Close Gender Gap')
+#         seek_budget_df_gap,seek_budget_gap,seek_resulting_gap_gap,seek_resulting_pvalues_gap,seek_adj_count_gap, seek_adj_budget_pct_gap,seek_pass_gap, seek_success_gap = reme_gap_seek(df,budget_df,X_full, project_group_feature='GENDER', protect_group_class='F', seek_goal=0, current_gap = female_coff, current_pvalue = female_pvalue, search_step = -0.001) 
+#         seek_budget_df_gap.to_excel('df_gap.xlsx')
+        
+#         # Run Reme Pvalue = 7%
+#         m_info = main_page_info.success('Running Remediation Scenario A: Mitigate Legal Risk')
+#         seek_budget_df_pv,seek_budget_pv,seek_resulting_gap_pv,seek_resulting_pvalues_pv,seek_adj_count_pv, seek_adj_budget_pct_pv,seek_pass_pv, seek_success_pv = reme_pvalue_seek(df,budget_df,X_full, project_group_feature='GENDER', protect_group_class='N', seek_goal=0.07, current_gap = female_coff, current_pvalue = female_pvalue, search_step = -0.001)
+#         seek_budget_df_pv.to_excel('df_pv.xlsx')
+
+#         # Run Reme Zero Gap
+#         m_info = main_page_info.success('Running Remediation Scenario B: Close Gender Gap')
+#         seek_budget_df_gap,seek_budget_gap,seek_resulting_gap_gap,seek_resulting_pvalues_gap,seek_adj_count_gap, seek_adj_budget_pct_gap,seek_pass_gap, seek_success_gap = reme_gap_seek(df,budget_df,X_full, project_group_feature='GENDER', protect_group_class='N', seek_goal=0, current_gap = female_coff, current_pvalue = female_pvalue, search_step = -0.001) 
+#         seek_budget_df_gap.to_excel('df_gap.xlsx')
+        
+        # Run Reme Pvalue = 7%
+        
+        # m_info = main_page_info.success('Running Remediation Scenario B: Mitigate Legal Risk')
+        # seek_budget_df_pv,seek_budget_pv,seek_resulting_gap_pv,seek_resulting_pvalues_pv,seek_adj_count_pv, seek_adj_budget_pct_pv,seek_pass_pv, seek_success_pv, df_result = reme_pvalue_seek(df,budget_df,X_full, project_group_feature='GENDER', protect_group_class='N', seek_goal=0.07, current_gap = female_coff, current_pvalue = female_pvalue, search_step = -0.001)
+        # seek_budget_df_pv.to_excel('df_pv_n.xlsx')
+        # df_result.to_excel('df_pv_n_result.xlsx')
+        
+        # asdf
+        
+#         seek_budget_df_pv = copy.deepcopy(budget_df)
+#         df_result = copy.deepcopy(df_initial_result)
+        
+#         m_info = main_page_info.success('Running Remediation Scenario B: Mitigate Legal Risk')
+#         seek_budget_df_pv,seek_budget_pv,seek_resulting_gap_pv,seek_resulting_pvalues_pv,seek_adj_count_pv, seek_adj_budget_pct_pv,seek_pass_pv, seek_success_pv, df_result = reme_pvalue_seek(df,seek_budget_df_pv,X_full, project_group_feature='GENDER', protect_group_class='F', seek_goal=0.07, current_gap = female_coff, current_pvalue = female_pvalue, input_df_result = df_result, count_loop = 0, search_step = -0.001)
+#         seek_budget_df_pv.to_excel('df_pv_female.xlsx')
+#         df_result.to_excel('df_pv_female_result.xlsx')
+        
+#         # asdf
+        
+#         m_info = main_page_info.success('Running Remediation Scenario B: Mitigate Legal Risk')
+#         seek_budget_df_pv,seek_budget_pv,seek_resulting_gap_pv,seek_resulting_pvalues_pv,seek_adj_count_pv, seek_adj_budget_pct_pv,seek_pass_pv, seek_success_pv, df_result = reme_pvalue_seek(df,seek_budget_df_pv,X_full, project_group_feature='ETHNICITY', protect_group_class='Black', seek_goal=0.07, current_gap = female_coff, current_pvalue = female_pvalue, search_step = -0.001)
+#         seek_budget_df_pv.to_excel('df_pv_black.xlsx')
+#         df_result.to_excel('df_pv_black_result.xlsx')
+        
+#         # asdf
+        
+#         m_info = main_page_info.success('Running Remediation Scenario B: Mitigate Legal Risk')
+#         seek_budget_df_pv,seek_budget_pv,seek_resulting_gap_pv,seek_resulting_pvalues_pv,seek_adj_count_pv, seek_adj_budget_pct_pv,seek_pass_pv, seek_success_pv, df_result = reme_pvalue_seek(df,seek_budget_df_pv,X_full, project_group_feature='ETHNICITY', protect_group_class='Asian', seek_goal=0.07, current_gap = female_coff, current_pvalue = female_pvalue, search_step = -0.001)
+#         seek_budget_df_pv.to_excel('df_pv_asian.xlsx')
+#         df_result.to_excel('df_pv_asian_result.xlsx')
+        
+#         m_info = main_page_info.success('Running Remediation Scenario B: Mitigate Legal Risk')
+#         seek_budget_df_pv,seek_budget_pv,seek_resulting_gap_pv,seek_resulting_pvalues_pv,seek_adj_count_pv, seek_adj_budget_pct_pv,seek_pass_pv, seek_success_pv, df_result = reme_pvalue_seek(df,seek_budget_df_pv,X_full, project_group_feature='GENDER', protect_group_class='F', seek_goal=0.07, current_gap = female_coff, current_pvalue = female_pvalue, search_step = -0.001)
+#         seek_budget_df_pv.to_excel('df_pv_female_2.xlsx')
+#         df_result.to_excel('df_pv_female_2_result.xlsx')
+        
+#         m_info = main_page_info.success('Running Remediation Scenario B: Mitigate Legal Risk')
+#         seek_budget_df_pv,seek_budget_pv,seek_resulting_gap_pv,seek_resulting_pvalues_pv,seek_adj_count_pv, seek_adj_budget_pct_pv,seek_pass_pv, seek_success_pv, df_result = reme_pvalue_seek(df,seek_budget_df_pv,X_full, project_group_feature='ETHNICITY', protect_group_class='Black', seek_goal=0.07, current_gap = female_coff, current_pvalue = female_pvalue, search_step = -0.001)
+#         seek_budget_df_pv.to_excel('df_pv_black2.xlsx')
+#         df_result.to_excel('df_pv_black2_result.xlsx')
+        
+#         # asdf
+        
+#         m_info = main_page_info.success('Running Remediation Scenario B: Mitigate Legal Risk')
+#         seek_budget_df_pv,seek_budget_pv,seek_resulting_gap_pv,seek_resulting_pvalues_pv,seek_adj_count_pv, seek_adj_budget_pct_pv,seek_pass_pv, seek_success_pv, df_result = reme_pvalue_seek(df,seek_budget_df_pv,X_full, project_group_feature='ETHNICITY', protect_group_class='Asian', seek_goal=0.07, current_gap = female_coff, current_pvalue = female_pvalue, search_step = -0.001)
+#         seek_budget_df_pv.to_excel('df_pv_asian2.xlsx')
+#         df_result.to_excel('df_pv_asian2_result.xlsx')
+        
+#         asdf
+
+#         # Run Reme Zero Gap
+#         m_info = main_page_info.success('Running Remediation Scenario C: Close Gender Gap')
+#         seek_budget_df_gap,seek_budget_gap,seek_resulting_gap_gap,seek_resulting_pvalues_gap,seek_adj_count_gap, seek_adj_budget_pct_gap,seek_pass_gap, seek_success_gap = reme_gap_seek(df,budget_df,X_full, project_group_feature='ETHNICITY', protect_group_class='Black', seek_goal=0, current_gap = female_coff, current_pvalue = female_pvalue, search_step = -0.001) 
+#         seek_budget_df_gap.to_excel('df_gap.xlsx')
+
+#         # Create download file for remediation
+#         reme_download_flag = 0
+#         df_reme_org = df.drop(columns=['VALIDATION_MESSAGE', 'VALIDATION_FLAG', 'NOW','LOG_SALARY'])
+#         if operator.not_(seek_budget_df_pv.empty):
+#             df_reme_ind = seek_budget_df_pv.merge(seek_budget_df_gap,on='EEID',how='inner').merge(df_reme_org,on = 'EEID',how='inner')
+#             list_reme = [x for x in df_reme_ind.columns.tolist() if x not in ['EEID','GENDER','SALARY']]
+#             list_reme = ['EEID','GENDER','SALARY']+list_reme
+#             df_reme_ind = df_reme_ind[list_reme]
+#             reme_download_flag = 1
+#         elif (seek_budget_df_pv.empty) and (operator.not_(seek_budget_df_gap.empty)):
+#             df_reme_ind = seek_budget_df_gap.merge(df_reme_org,on = 'EEID',how='inner')
+#             list_reme = [x for x in df_reme_ind.columns.tolist() if x not in ['EEID','GENDER','SALARY']]
+#             list_reme = ['EEID','GENDER','SALARY']+list_reme
+#             df_reme_ind = df_reme_ind[list_reme]
+#             reme_download_flag = 1
+#         # df_reme_ind.to_excel('df_reme_ind.xlsx')
+
+#         # Run Remediation Messages
+#         message_budget_pv = np.nan
+#         if seek_pass_pv == False:
+#             message_budget_pv = '0 - gender pay gap is currently not statistically significant.'
+#             message_budget_pv_overview = message_budget_pv
+#         elif (seek_pass_pv == True) and (seek_success_pv == False):
+#             message_budget_pv = 'No results found, please contact our consultant for more information.'
+#             message_budget_pv_overview = message_budget_pv
+#         else:
+#             if seek_budget_pv> 1000000:
+#                 message_budget_pv = str(locale.format("%.2f", round(seek_budget_pv/1000000,2), grouping=True))+' Million'+'\n'+'('+str(round(seek_adj_budget_pct_pv*100,0))+'% of Pay)'
+#             else:
+#                 message_budget_pv = str(locale.format("%d", round(seek_budget_pv/1000,0), grouping=True))+' K'+'\n'+'('+str(round(seek_adj_budget_pct_pv*100,0))+'% of Pay)'
+#             message_budget_pv_overview = "Raising women's pay by $"+message_budget_pv+' will reduce gap to ' + '-2.2%' + ' and become statistically insignificant.'
+
+#         message_budget_gap = np.nan
+#         if seek_pass_gap == False:
+#             message_budget_gap = '0 - Women earn more than men, so no adjustment is necessary.'
+#         elif (seek_pass_gap == True) and (seek_success_gap == False):
+#             message_budget_gap = 'No results found, please contact our consultant for more information.'
+#         else:
+#             if seek_budget_gap> 1000000:
+#                 message_budget_gap = str(locale.format("%.2f", round(seek_budget_gap/1000000,2), grouping=True))+' Million'+'\n'+'('+str(round(seek_adj_budget_pct_gap*100,2))+'% of Pay)'
+#             else:
+#                 message_budget_gap = str(locale.format("%d", round(seek_budget_gap/1000,0), grouping=True))+' K'+'\n'+'('+str(round(seek_adj_budget_pct_gap*100,2))+'% of Pay)'
+
+#         scenario = ['Current','A','B']
+#         action = ['🏁 No change','✔️ Mitigate legal risk \n'+'✔️ Reduce the gender gap to a statistical insignificant level.','✔️ Mitigate legal risk \n'+'✔️ Completely close gender gap \n'+'✔️ Become a market leader (Top 1%)\n']
+#         budget = ['0',message_budget_pv,message_budget_gap]
+
+#         if abs(seek_resulting_gap_gap)<0.0005:
+#                 seek_resulting_gap_gap = 0
+#         net_gap = [female_coff,seek_resulting_gap_pv,seek_resulting_gap_gap]
+#         net_gap = [f'{i*100:.1f}%' for i in net_gap]
+
+#         df_reme = pd.DataFrame({'Scenario': scenario, 'How do I do this?': action, 'What is my budget?': budget, 'What is the gap after adjustment?': net_gap})
+
+#         cell_hover = {  # for row hover use <tr> instead of <td>
+#                         'selector': 'td:hover',
+#                         'props': [('background-color', 'lightgrey')]
+#                     }
+#         index_names = {
+#                         'selector': '.index_name',
+#                         'props': 'font-style: italic; color: darkgrey; font-weight:normal;'
+#                     }
+#         headers = {
+#                         'selector': 'th:not(.index_name)',
+#                         'props': 'background-color: #3498DB; color: white; text-align: center; '
+#                     }
+#         styler = df_reme.style.hide_index().set_table_styles([cell_hover, index_names, headers], overwrite=False).set_properties(**{
+#     'white-space': 'pre-wrap'})
+        
         # Show exclude and include features
         include_feature = [display_map.get(item,item)  for item in include_feature]
         exclude_feature = [display_map.get(item,item)  for item in exclude_feature]
@@ -1283,7 +1519,7 @@ def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_
 
         cell_format.set_pattern(1)  # This is optional when using a solid fill.
         cell_format.set_bg_color('yellow')
-        worksheet.write('A1', 'Please follow template instructions to update invalid records.',cell_format)
+        worksheet.write('A1', 'Please see the instructions for a valid record.',cell_format)
 
         writer.save()
         processed_data = output.getvalue()
@@ -1296,11 +1532,10 @@ def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_
 
         main_page.markdown("""---""")
         m_col1_but_col1, m_col1_but_col2, m_col1_but_col3, m_col1_but_col4 = main_page.columns((0.5, 0.5, 1 , 1))
-        
+
         m_col1_but_col1.metric('Submitted Entry',before_clean_record)
         m_col1_but_col1.metric('Processed Entry',after_clean_record)
         m_col1_but_col1.metric('Invalid Entry',before_clean_record - after_clean_record)
-        
         if operator.not_(df_validation.empty):
             m_col1_but_col1.markdown(get_excel_file_downloader_html(processed_data, 'Invalid Entry.xlsx'), unsafe_allow_html=True)
             m_col1_but_col1.markdown("🖱️ 'Save link as...'")
@@ -1370,9 +1605,8 @@ def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_
             metric_R2_3.markdown("Great! Pay drivers are **sufficient** to account for the variation of wages between employees. Let us look at the pay gap.", unsafe_allow_html=True)
         else:
             metric_R2_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Orange; font-size: 110%; opacity: 0.7'> ⚠️ Below market  </h1>" , unsafe_allow_html=True)
-            metric_R2_3.markdown("The selected pay drivers are <font color=Orange> **not robust** </font> in drawing conclusions on the pay gap. You can improve the model robustness by adding/changing optional pay drivers such as talent potential, cost centre, skills and so on.", unsafe_allow_html=True)
-            # m_info = main_page_info.warning('Please improve model robustness by include another set of pay drivers')
-            # st.stop()
+            metric_R2_3.markdown("The default compensation drivers are <font color=Orange> **not robust** </font> in drawing conclusions on the salary gap. In general, we can improve the model robustness by adding additional drivers such as talent potential, cost centre, skills and so on. Please contact us for an open consultation.", unsafe_allow_html=True)
+            st.stop()
         # metric_R2_3.markdown("<h1 style='text-align: center; vertical-align: bottom; color: Black; background-color: #3498DB; opacity: 0.7; border-style: dotted'>Observation</h1>", unsafe_allow_html=True)
 
         # Show Gender Gap
