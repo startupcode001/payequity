@@ -283,8 +283,8 @@ def reme(df,budget_df,X_full,factor, project_group_feature, protect_group_class)
     
     # Recalculate pay gap and p value with adjusted salary
     
-    # x_dis = copy.deepcopy(X_full)
-    # y_dis = copy.deepcopy(budget_df['adj_salary'])
+    x_dis = copy.deepcopy(X_full)
+    y_dis = copy.deepcopy(budget_df['adj_salary'])
     
     model = sm.OLS(y_dis, x_dis)
     results = model.fit()
@@ -301,7 +301,7 @@ def reme(df,budget_df,X_full,factor, project_group_feature, protect_group_class)
     
     budget = np.sum(np.exp(budget_df['adj_salary']) - np.exp(budget_df['original']))
     budget_df['S_Salary'] = np.trunc(np.exp(budget_df['original']))
-    budget_df['S_Budget'] = np.trunc(np.exp(budget_df['adj_salary']))-budget_df['S_Salary']
+    budget_df['S_Budget'] = np.trunc(np.exp(budget_df['adj_salary']))-np.trunc(np.exp(budget_df['original']))
     budget_df['S_Adjusted'] = np.trunc(np.exp(budget_df['adj_salary']))
     budget_df['S_AdjInd'] = 0
     budget_df.loc[budget_df['S_Budget'] >0, 'S_AdjInd']=1
@@ -337,8 +337,8 @@ def reme(df,budget_df,X_full,factor, project_group_feature, protect_group_class)
     # print(adj_budget_pct)
     # budget_df.to_excel('check_final_budget.xlsx')
     # asdf
-    return budget_df, budget, resulting_gap, resulting_pvalues, adj_count, adj_budget_pct, results
-    # return budget_df, budget, resulting_gap, resulting_pvalues, adj_count, adj_budget_pct, results, x_dis, y_dis
+
+    return budget_df, budget, resulting_gap, resulting_pvalues, adj_count, adj_budget_pct, results, x_dis, y_dis
 
 @st.experimental_memo(show_spinner=False)
 # Run Goal Seek for insignificant gap and 0 gap

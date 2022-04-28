@@ -283,8 +283,8 @@ def reme(df,budget_df,X_full,factor, project_group_feature, protect_group_class)
     
     # Recalculate pay gap and p value with adjusted salary
     
-    x_dis = copy.deepcopy(X_full)
-    y_dis = copy.deepcopy(budget_df['adj_salary'])
+    # x_dis = copy.deepcopy(X_full)
+    # y_dis = copy.deepcopy(budget_df['adj_salary'])
     
     model = sm.OLS(y_dis, x_dis)
     results = model.fit()
@@ -301,7 +301,7 @@ def reme(df,budget_df,X_full,factor, project_group_feature, protect_group_class)
     
     budget = np.sum(np.exp(budget_df['adj_salary']) - np.exp(budget_df['original']))
     budget_df['S_Salary'] = np.trunc(np.exp(budget_df['original']))
-    budget_df['S_Budget'] = np.trunc(np.exp(budget_df['adj_salary']))-np.trunc(np.exp(budget_df['original']))
+    budget_df['S_Budget'] = np.trunc(np.exp(budget_df['adj_salary']))-budget_df['S_Salary']
     budget_df['S_Adjusted'] = np.trunc(np.exp(budget_df['adj_salary']))
     budget_df['S_AdjInd'] = 0
     budget_df.loc[budget_df['S_Budget'] >0, 'S_AdjInd']=1
@@ -337,8 +337,8 @@ def reme(df,budget_df,X_full,factor, project_group_feature, protect_group_class)
     # print(adj_budget_pct)
     # budget_df.to_excel('check_final_budget.xlsx')
     # asdf
-
-    return budget_df, budget, resulting_gap, resulting_pvalues, adj_count, adj_budget_pct, results, x_dis, y_dis
+    return budget_df, budget, resulting_gap, resulting_pvalues, adj_count, adj_budget_pct, results
+    # return budget_df, budget, resulting_gap, resulting_pvalues, adj_count, adj_budget_pct, results, x_dis, y_dis
 
 @st.experimental_memo(show_spinner=False)
 # Run Goal Seek for insignificant gap and 0 gap
@@ -981,7 +981,7 @@ def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_
     config = main_page.form("Configuration")
     with config:
         config.write("Optional Setup: select fair pay confidence interval and pay drivers")
-        ci_select, optional_select, req_select, = config.columns((0.6, 1, 0.8)) 
+        ci_select, optional_select, req_select, = config.columns((0.6, 1, 0.9)) 
         ci = ci_select.slider(label = 'A: Select fair pay confidence internal %', value = 95, min_value = 70, max_value = 99, step = 1, help='Setting at 95% means I want to have a pay range so that 95% of the time, the predicted pay falls inside.')
         ci = ci/100
         optional_col = optional_select.multiselect(label = 'B: Select Optional Pay Factors',options=display_optional_list,default=display_optional_list,disabled=False)
@@ -1060,7 +1060,7 @@ def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_
                     current_gap = df_result[df_result['CONTENT']==protect_group_class]['COEF'].values[0]
                     current_pvalue = df_result[df_result['CONTENT']==protect_group_class]['PVALUE'].values[0]
 
-                seek_budget_df_pv,seek_budget_pv,seek_resulting_gap_pv,seek_resulting_pvalues_pv,seek_adj_count_pv, seek_adj_budget_pct_pv,seek_pass_pv, seek_success_pv, df_result = reme_pvalue_seek(df,seek_budget_df_pv,X_full, project_group_feature=project_group_feature, protect_group_class=protect_group_class, seek_goal=seek_goal_pv, current_gap = current_gap, current_pvalue = current_pvalue, input_df_result = df_result, count_loop = count_loop, search_step = -0.003)
+                seek_budget_df_pv,seek_budget_pv,seek_resulting_gap_pv,seek_resulting_pvalues_pv,seek_adj_count_pv, seek_adj_budget_pct_pv,seek_pass_pv, seek_success_pv, df_result = reme_pvalue_seek(df,seek_budget_df_pv,X_full, project_group_feature=project_group_feature, protect_group_class=protect_group_class, seek_goal=seek_goal_pv, current_gap = current_gap, current_pvalue = current_pvalue, input_df_result = df_result, count_loop = count_loop, search_step = -0.005)
                 
                 pv_budget_name = 'pv_budget_'+str(count_loop)+'_'+protect_group_class+'.xlsx'
                 pv_result_name = 'pv_result_'+str(count_loop)+'_'+protect_group_class+'.xlsx'
@@ -1122,7 +1122,7 @@ def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_
                     current_gap = df_result[df_result['CONTENT']==protect_group_class]['COEF'].values[0]
                     current_pvalue = df_result[df_result['CONTENT']==protect_group_class]['PVALUE'].values[0]
 
-                seek_budget_df_gap,seek_budget_gap,seek_resulting_gap_gap,seek_resulting_pvalues_gap,seek_adj_count_gap, seek_adj_budget_pct_gap,seek_pass_gap, seek_success_gap, df_result = reme_gap_seek(df,seek_budget_df_gap,X_full, project_group_feature=project_group_feature, protect_group_class=protect_group_class, seek_goal=seek_goal_gap, current_gap = current_gap, current_pvalue = current_pvalue, input_df_result = df_result, count_loop = count_loop, search_step = -0.003)
+                seek_budget_df_gap,seek_budget_gap,seek_resulting_gap_gap,seek_resulting_pvalues_gap,seek_adj_count_gap, seek_adj_budget_pct_gap,seek_pass_gap, seek_success_gap, df_result = reme_gap_seek(df,seek_budget_df_gap,X_full, project_group_feature=project_group_feature, protect_group_class=protect_group_class, seek_goal=seek_goal_gap, current_gap = current_gap, current_pvalue = current_pvalue, input_df_result = df_result, count_loop = count_loop, search_step = -0.005)
                 
                 gap_budget_name = 'gap_budget_'+str(count_loop)+'_'+protect_group_class+'.xlsx'
                 gap_result_name = 'gap_result_'+str(count_loop)+'_'+protect_group_class+'.xlsx'
