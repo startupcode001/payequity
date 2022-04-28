@@ -285,8 +285,9 @@ def reme(df,budget_df,X_full,factor, project_group_feature, protect_group_class)
     
     # x_dis = copy.deepcopy(X_full)
     # y_dis = copy.deepcopy(budget_df['adj_salary'])
+    # model = sm.OLS(y_dis, x_dis)
     
-    model = sm.OLS(y_dis, x_dis)
+    model = sm.OLS(budget_df['adj_salary'], X_full)
     results = model.fit()
     
 #     budget_df['adj_salary'].to_excel('reme_y.xlsx')
