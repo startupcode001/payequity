@@ -378,7 +378,7 @@ def reme_gap_seek(df,budget_df,X_full, project_group_feature, protect_group_clas
     else:
         seek_pass = True
         for factor in factor_range:
-            result_budget_df, result_budget, resulting_gap, resulting_pvalues, adj_count, adj_budget_pct, results, x_dis, y_dis = reme(df,budget_df,X_full,factor, project_group_feature, protect_group_class)
+            result_budget_df, result_budget, resulting_gap, resulting_pvalues, adj_count, adj_budget_pct, results = reme(df,budget_df,X_full,factor, project_group_feature, protect_group_class)
             
             if np.abs(resulting_gap-seek_goal)<=threshold:
                 seek_budget_df = copy.deepcopy(result_budget_df)
@@ -447,7 +447,7 @@ def reme_pvalue_seek(df,budget_df,X_full, project_group_feature, protect_group_c
     else:
         seek_pass = True
         for factor in factor_range:
-            result_budget_df, result_budget, resulting_gap, resulting_pvalues, adj_count, adj_budget_pct, results, x_dis, y_dis = reme(df,budget_df,X_full,factor, project_group_feature, protect_group_class)
+            result_budget_df, result_budget, resulting_gap, resulting_pvalues, adj_count, adj_budget_pct, results = reme(df,budget_df,X_full,factor, project_group_feature, protect_group_class)
 
             # if np.abs(resulting_pvalues-seek_goal)<=threshold:
             if resulting_pvalues>=seek_goal:
