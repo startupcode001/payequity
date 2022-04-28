@@ -736,9 +736,9 @@ def run(data=None, df_gender_name=None, req_list=None, ci = 0.95):
     df_result = results.summary2().tables[1]
     df_result.reset_index(level=0, inplace=True)
     df_result = df_result.rename(columns={"index":"CONTENT"})
-    y_dis.to_excel('y_dis.xlsx')
-    x_dis.to_excel('x_dis.xlsx')
-    df_result.to_excel('dis_model.xlsx')
+    # y_dis.to_excel('y_dis.xlsx')
+    # x_dis.to_excel('x_dis.xlsx')
+    # df_result.to_excel('dis_model.xlsx')
 
 #     temp_y = pd.read_excel(r'pv_y_dis.xlsx')
 #     print(temp_y.head(3))
@@ -796,7 +796,9 @@ def run(data=None, df_gender_name=None, req_list=None, ci = 0.95):
     # Save budget file for prediction
     X_full = x_dis    
     
+    eth_flag = 0
     if 'ETHNICITY' in include_feature:
+        eth_flag = 1
         budget_df = pd.DataFrame({'EEID':df['EEID'], 'original_baseline': df['LOG_SALARY'], 'original': df['LOG_SALARY'], 'GENDER': df['GENDER'],'ETHNICITY': df['ETHNICITY'], 'predicted':y_pred,'pred_lower': lower, 'pred_upper': upper, 'pred_stderr': std})
     else:
         budget_df = pd.DataFrame({'EEID':df['EEID'], 'original_baseline': df['LOG_SALARY'], 'original': df['LOG_SALARY'], 'GENDER': df['GENDER'],'predicted':y_pred,'pred_lower': lower, 'pred_upper': upper, 'pred_stderr': std})
@@ -845,30 +847,34 @@ def run(data=None, df_gender_name=None, req_list=None, ci = 0.95):
     fig_gender_bar = plot_bar(df_result_gender,'GENDER')
     
     # Result Ethnicity Table
-    df_result_eth = df_result[df_result['CONTENT'].str.contains("ETHNICITY")==True]
-    df_result_eth = df_result_eth[['CONTENT','Coef.','P>|t|']]
-    df_result_eth.columns = ['CONTENT','COEF','PVALUE']
-    df_result_eth['ETHNICITY'] = df_result_eth['CONTENT']
-    df_result_eth['COEF_DISPLAY'] = df_result_eth['COEF']
-    df_result_eth['STAT'] = "No"
-    df_result_eth['STAT_COUNT'] = 0
-    df_result_eth.loc[df_result_eth['PVALUE']<=0.05,"STAT"] = "Yes"
-    df_result_eth.loc[((df_result_eth['PVALUE']<=0.05) & (df_result_eth['COEF']<0)),"STAT_COUNT"] = 1
-    df_result_eth = df_result_eth.sort_values(by=['COEF_DISPLAY'], ascending=False)
-    df_result_eth['ETHNICITY'] = df_result_eth['ETHNICITY'].str.replace("[","")
-    df_result_eth['ETHNICITY'] = df_result_eth['ETHNICITY'].str.replace("]","")
-    df_result_eth['ETHNICITY'] = df_result_eth['ETHNICITY'].str.split('.').str[-1]
-    df_result_eth = df_result_eth.drop(columns=['CONTENT'])
-    df_result_eth = df_result_eth.reset_index(drop=True)
-    baseline_eth = df['ETHNICITY'].value_counts()
-    # baseline_eth.to_excel('baseline_eth.xlsx')
-    # print(baseline_eth.index[0])
-    baseline_row = pd.DataFrame({'ETHNICITY':baseline_eth.index[0], 'COEF':0, 'COEF_DISPLAY':0,'PVALUE':1,'STAT':"No",'STAT_COUNT':0},index =[0])
-    df_result_eth = pd.concat([baseline_row, df_result_eth[:]]).reset_index(drop = True)
-    df_result_eth = df_result_eth[~((df_result_eth['ETHNICITY']=='Unknown') | (df_result_eth['ETHNICITY']=='unknown'))]
-    eth_baseline = df_result_eth['ETHNICITY'][0]
-    df_result_eth.to_excel('result_eth.xlsx')
-    fig_eth_bar = plot_bar(df_result_eth,'ETHNICITY')
+    fig_eth_bar = None
+    df_result_eth = None
+    eth_baseline = None
+    if eth_flag == 1:    
+        df_result_eth = df_result[df_result['CONTENT'].str.contains("ETHNICITY")==True]
+        df_result_eth = df_result_eth[['CONTENT','Coef.','P>|t|']]
+        df_result_eth.columns = ['CONTENT','COEF','PVALUE']
+        df_result_eth['ETHNICITY'] = df_result_eth['CONTENT']
+        df_result_eth['COEF_DISPLAY'] = df_result_eth['COEF']
+        df_result_eth['STAT'] = "No"
+        df_result_eth['STAT_COUNT'] = 0
+        df_result_eth.loc[df_result_eth['PVALUE']<=0.05,"STAT"] = "Yes"
+        df_result_eth.loc[((df_result_eth['PVALUE']<=0.05) & (df_result_eth['COEF']<0)),"STAT_COUNT"] = 1
+        df_result_eth = df_result_eth.sort_values(by=['COEF_DISPLAY'], ascending=False)
+        df_result_eth['ETHNICITY'] = df_result_eth['ETHNICITY'].str.replace("[","")
+        df_result_eth['ETHNICITY'] = df_result_eth['ETHNICITY'].str.replace("]","")
+        df_result_eth['ETHNICITY'] = df_result_eth['ETHNICITY'].str.split('.').str[-1]
+        df_result_eth = df_result_eth.drop(columns=['CONTENT'])
+        df_result_eth = df_result_eth.reset_index(drop=True)
+        baseline_eth = df['ETHNICITY'].value_counts()
+        # baseline_eth.to_excel('baseline_eth.xlsx')
+        # print(baseline_eth.index[0])
+        baseline_row = pd.DataFrame({'ETHNICITY':baseline_eth.index[0], 'COEF':0, 'COEF_DISPLAY':0,'PVALUE':1,'STAT':"No",'STAT_COUNT':0},index =[0])
+        df_result_eth = pd.concat([baseline_row, df_result_eth[:]]).reset_index(drop = True)
+        df_result_eth = df_result_eth[~((df_result_eth['ETHNICITY']=='Unknown') | (df_result_eth['ETHNICITY']=='unknown'))]
+        eth_baseline = df_result_eth['ETHNICITY'][0]
+        df_result_eth.to_excel('result_eth.xlsx')
+        fig_eth_bar = plot_bar(df_result_eth,'ETHNICITY')
     
     # Result All Table
     df_initial_result = process_run_result(results)
@@ -895,7 +901,9 @@ def run(data=None, df_gender_name=None, req_list=None, ci = 0.95):
     # plt.clf()
     df_eth = None
     eth_minor_pay = None
-    if 'ETHNICITY' in include_feature:
+    fig_eth_hc = None
+    
+    if eth_flag == 1:
         df_eth = df.pivot_table(index=['ETHNICITY'],values=['EEID','SALARY'],aggfunc={'EEID':'count','SALARY':'mean'},fill_value=np.nan)
         df_eth.columns = ['_'.join(col).strip() for col in df_eth.columns.values]
         df_eth = df_eth.reset_index()
@@ -911,7 +919,7 @@ def run(data=None, df_gender_name=None, req_list=None, ci = 0.95):
     # df.to_excel('gender.xlsx')
     # print(message.loc[['OVERVIEW']]['Message'])
     
-    return df, df_org, df_validation, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2, female_coff, female_pvalue, before_clean_record, after_clean_record,hc_female,X_full,budget_df,exclude_feature, include_feature,df_gender, df_eth, fig_gender_hc,fig_eth_hc, avg_pay, gender_female_pay, gender_nonb_pay, eth_minor_pay,fig_gender_bar, fig_eth_bar, df_result_gender, df_result_eth,eth_baseline, df_initial_result, predict_df, ci_view_lower, ci_view_upper
+    return df, df_org, df_validation, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2, female_coff, female_pvalue, before_clean_record, after_clean_record,hc_female,X_full,budget_df,exclude_feature, include_feature,df_gender, df_eth, fig_gender_hc,fig_eth_hc, avg_pay, gender_female_pay, gender_nonb_pay, eth_minor_pay,fig_gender_bar, fig_eth_bar, df_result_gender, df_result_eth,eth_baseline, eth_flag, df_initial_result, predict_df, ci_view_lower, ci_view_upper
 
 def display_rename(display_map,feature):
     return [display_map.get(item,item)  for item in feature]
@@ -1013,7 +1021,7 @@ def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_
         
 # Run discovery model: ---------------------------------------------------------------------------------------------------------------------
         m_info = main_page_info.info('Running Gap Analysis')
-        df, df_org,  df_validation, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2, female_coff, female_pvalue, before_clean_record, after_clean_record,hc_female,X_full,budget_df,exclude_feature, include_feature,df_gender,df_eth,fig_gender_hc,fig_eth_hc,avg_pay, gender_female_pay, gender_nonb_pay, eth_minor_pay,fig_gender_bar, fig_eth_bar,df_result_gender, df_result_eth, eth_baseline, df_initial_result, predict_df, ci_view_lower, ci_view_upper = run(df,df_gender_name,req_list,ci)     
+        df, df_org,  df_validation, message, exclude_col, r2_raw, female_coff_raw, female_pvalue_raw, r2, female_coff, female_pvalue, before_clean_record, after_clean_record,hc_female,X_full,budget_df,exclude_feature, include_feature,df_gender,df_eth,fig_gender_hc,fig_eth_hc,avg_pay, gender_female_pay, gender_nonb_pay, eth_minor_pay,fig_gender_bar, fig_eth_bar,df_result_gender, df_result_eth, eth_baseline, eth_flag, df_initial_result, predict_df, ci_view_lower, ci_view_upper = run(df,df_gender_name,req_list,ci)     
         
         # st.write(df.columns.tolist())
         # , fig_gender_bar
@@ -1168,7 +1176,10 @@ def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_
                 C_seek_gap_df[list_reme_C],on = 'EEID',how='inner').merge(
                 df_reme_org,on = 'EEID',how='inner')
             list_reme = [x for x in df_reme_ind.columns.tolist() if x not in ['EEID','GENDER','ETHNICITY','SALARY']]
-            list_reme = ['EEID','GENDER','ETHNICITY','SALARY']+list_reme
+            if eth_flag == 1:
+                list_reme = ['EEID','GENDER','ETHNICITY','SALARY']+list_reme
+            else:
+                list_reme = ['EEID','GENDER','SALARY']+list_reme
             df_reme_ind = df_reme_ind[list_reme]
             reme_download_flag = 1
         elif (seek_budget_df_pv.empty) and (operator.not_(seek_budget_df_gap.empty)):
@@ -1540,20 +1551,22 @@ def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_
         # m_col1_but_col2.metric('Avg Non-Male Salary',gender_minor_pay_info, delta=gender_minor_pay_delta)
         m_col1_but_col2.metric('Avg Non-Binary Salary',gender_nonb_pay_info)
 
-        eth_major_name = 'Avg Non-'+ df_eth['ETHNICITY_NAME'][0] + ' Salary'
-        eth_minor_pay_info = str(locale.format("%d", round(eth_minor_pay/1000,0), grouping=True))+'k'
-        eth_minor_pay_delta = str(locale.format("%d", round(eth_minor_pay/1000,0) - round(avg_pay/1000,0), grouping=True))+'k'
-        # m_col1_but_col2.metric(eth_major_name,eth_minor_pay_info, delta = eth_minor_pay_delta)
-        m_col1_but_col2.metric(eth_major_name,eth_minor_pay_info)
+        if eth_flag == 1:
+            eth_major_name = 'Avg Non-'+ df_eth['ETHNICITY_NAME'][0] + ' Salary'
+            eth_minor_pay_info = str(locale.format("%d", round(eth_minor_pay/1000,0), grouping=True))+'k'
+            eth_minor_pay_delta = str(locale.format("%d", round(eth_minor_pay/1000,0) - round(avg_pay/1000,0), grouping=True))+'k'
+            # m_col1_but_col2.metric(eth_major_name,eth_minor_pay_info, delta = eth_minor_pay_delta)
+            m_col1_but_col2.metric(eth_major_name,eth_minor_pay_info)
 
         # m_col1_but_col1_2.metric('Submission Record',before_clean_record)
         # m_col1_but_col1_2.metric('Successful Run',after_clean_record)
 
         m_col1_but_col3.markdown("<h1 style='text-align: center; vertical-align: top; font-size: 100%'>Gender Distribution</h1>", unsafe_allow_html=True)
         m_col1_but_col3.pyplot(fig_gender_hc)
-
-        m_col1_but_col4.markdown("<h1 style='text-align: center; vertical-align: top; font-size: 100%'>Ethnicity Distribution</h1>", unsafe_allow_html=True)
-        m_col1_but_col4.pyplot(fig_eth_hc)
+        
+        if eth_flag == 1: 
+            m_col1_but_col4.markdown("<h1 style='text-align: center; vertical-align: top; font-size: 100%'>Ethnicity Distribution</h1>", unsafe_allow_html=True)
+            m_col1_but_col4.pyplot(fig_eth_hc)
 
         # main_page.markdown("""---""")
 
@@ -1618,27 +1631,28 @@ def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_
             metric_net_gap_3.write('As a precaution, you can routinely repeat this analysis to monitor the pay gap. An alternative is to consider completely closing the pay gap to zero.')                
 
         # Show Ethnicity Gap
-        main_page.markdown("""---""")
-        metric_eth_gap_1, metric_eth_gap_2, metric_eth_gap_3 = main_page.columns((1, 1.1, 1.4))            
-        metric_eth_gap_1.markdown("<h1 style='text-align: left; vertical-align: bottom; font-size: 150%; color: #3498DB; opacity: 0.7'> Ethnicity Gap </h1>", unsafe_allow_html=True)
-        metric_eth_gap_1.plotly_chart(fig_eth_bar, use_container_width=True)
+        if eth_flag == 1:
+            main_page.markdown("""---""")
+            metric_eth_gap_1, metric_eth_gap_2, metric_eth_gap_3 = main_page.columns((1, 1.1, 1.4))            
+            metric_eth_gap_1.markdown("<h1 style='text-align: left; vertical-align: bottom; font-size: 150%; color: #3498DB; opacity: 0.7'> Ethnicity Gap </h1>", unsafe_allow_html=True)
+            metric_eth_gap_1.plotly_chart(fig_eth_bar, use_container_width=True)
 
-        metric_eth_gap_2.markdown("<h1 style='text-align: left; vertical-align: bottom;color: #3498DB; font-size: 150%; opacity: 0.7'>Benchmark</h1>", unsafe_allow_html=True)
-        metric_eth_gap_2.write("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 110%; opacity: 0.7'> 🌐 -10% ~ 5% </h1>" "Pay gap measures for every dollar paid to ethnic majority (" + eth_baseline + "), how much (less) or more goes to ethnicity minorities. For example pay gap at -10% means that on average black are paid 10% less compared to white all else equal. In US, ethnicity gap typically ranges between -10% and +5%. ", unsafe_allow_html=True)    
+            metric_eth_gap_2.markdown("<h1 style='text-align: left; vertical-align: bottom;color: #3498DB; font-size: 150%; opacity: 0.7'>Benchmark</h1>", unsafe_allow_html=True)
+            metric_eth_gap_2.write("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 110%; opacity: 0.7'> 🌐 -10% ~ 5% </h1>" "Pay gap measures for every dollar paid to ethnic majority (" + eth_baseline + "), how much (less) or more goes to ethnicity minorities. For example pay gap at -10% means that on average black are paid 10% less compared to white all else equal. In US, ethnicity gap typically ranges between -10% and +5%. ", unsafe_allow_html=True)    
 
-        num_eth_sig = df_result_eth['STAT_COUNT'].sum()
-        # num_gender_sig = 0
-        metric_eth_gap_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: #3498DB; font-size: 150%; opacity: 0.7'>Observation</h1>", unsafe_allow_html=True)
-        if num_eth_sig>0:
-            metric_eth_gap_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Orange; font-size: 110%; opacity: 0.7'> ⚠️ Legal Risk - High </h1>", unsafe_allow_html=True)
-            metric_eth_gap_3.write('There is/are '+ str(num_eth_sig) + ' statistically significant ethnicity pay gap shown with ' + '<font color=Orange> **Red** </font>' +' bar. A significant ethnicity pay gap means - we are more than 95% certain that the gap exists after incorporates all of the legitimate determinants of pay (such as differences of skill, effort, and responsibility). From a legal perspective:',unsafe_allow_html=True) 
-            metric_eth_gap_3.write('* Statistically significant gap - Strong evidence of ethnicity pay discrimination' +'\n'+'* Non statistically significant gap - No evidence of ethnicity pay discrimination, the gap is likely due to random chance',unsafe_allow_html=True)
-            metric_eth_gap_3.write('You may consider reducing the pay gap to a statistically insignificant level to reduce legal risk.')
-        else:
-            metric_eth_gap_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 110%; opacity: 0.7'> ✔️ Legal Risk - Low </h1>", unsafe_allow_html=True)
-            metric_eth_gap_3.write('There is no negative statistically significant ethnicity pay gap shown in the chart. A significant ethnicity pay gap means - we are more than 95% certain that the gap exists after incorporates all of the legitimate determinants of pay (such as differences of skill, effort, and responsibility). From a legal perspective:',unsafe_allow_html=True) 
-            metric_eth_gap_3.write('* Statistically significant gap - Strong evidence of ethnicity pay discrimination' +'\n'+'* Non statistically significant gap - No evidence of gender pay discrimination, the gap is likely due to random chance',unsafe_allow_html=True)
-            metric_eth_gap_3.write('As a precaution, you can routinely repeat this analysis to monitor the pay gap. An alternative is to consider completely closing the pay gap to zero.')        
+            num_eth_sig = df_result_eth['STAT_COUNT'].sum()
+            # num_gender_sig = 0
+            metric_eth_gap_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: #3498DB; font-size: 150%; opacity: 0.7'>Observation</h1>", unsafe_allow_html=True)
+            if num_eth_sig>0:
+                metric_eth_gap_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Orange; font-size: 110%; opacity: 0.7'> ⚠️ Legal Risk - High </h1>", unsafe_allow_html=True)
+                metric_eth_gap_3.write('There is/are '+ str(num_eth_sig) + ' statistically significant ethnicity pay gap shown with ' + '<font color=Orange> **Red** </font>' +' bar. A significant ethnicity pay gap means - we are more than 95% certain that the gap exists after incorporates all of the legitimate determinants of pay (such as differences of skill, effort, and responsibility). From a legal perspective:',unsafe_allow_html=True) 
+                metric_eth_gap_3.write('* Statistically significant gap - Strong evidence of ethnicity pay discrimination' +'\n'+'* Non statistically significant gap - No evidence of ethnicity pay discrimination, the gap is likely due to random chance',unsafe_allow_html=True)
+                metric_eth_gap_3.write('You may consider reducing the pay gap to a statistically insignificant level to reduce legal risk.')
+            else:
+                metric_eth_gap_3.markdown("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 110%; opacity: 0.7'> ✔️ Legal Risk - Low </h1>", unsafe_allow_html=True)
+                metric_eth_gap_3.write('There is no negative statistically significant ethnicity pay gap shown in the chart. A significant ethnicity pay gap means - we are more than 95% certain that the gap exists after incorporates all of the legitimate determinants of pay (such as differences of skill, effort, and responsibility). From a legal perspective:',unsafe_allow_html=True) 
+                metric_eth_gap_3.write('* Statistically significant gap - Strong evidence of ethnicity pay discrimination' +'\n'+'* Non statistically significant gap - No evidence of gender pay discrimination, the gap is likely due to random chance',unsafe_allow_html=True)
+                metric_eth_gap_3.write('As a precaution, you can routinely repeat this analysis to monitor the pay gap. An alternative is to consider completely closing the pay gap to zero.')        
 
         # Remediation Scenarios
         main_page.markdown("""---""")
