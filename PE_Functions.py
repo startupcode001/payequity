@@ -1162,7 +1162,8 @@ def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_
             list_reme_A = ['EEID','SCENARIO_A_EMPLOYEE','SCENARIO_A_BUDGET','SCENARIO_A_ADJUSTED_SALARY']
             list_reme_B = ['EEID','SCENARIO_B_EMPLOYEE','SCENARIO_B_BUDGET','SCENARIO_B_ADJUSTED_SALARY']
             list_reme_C = ['EEID','SCENARIO_C_EMPLOYEE','SCENARIO_C_BUDGET','SCENARIO_C_ADJUSTED_SALARY']
-            df_reme_ind = A_seek_outlier_df[list_reme_A].merge(
+            df_reme_ind = predict_df.merge(
+                A_seek_outlier_df[list_reme_A],on= 'EEID',how='inner').merge(
                 B_seek_pv_df[list_reme_B],on = 'EEID',how='inner').merge(
                 C_seek_gap_df[list_reme_C],on = 'EEID',how='inner').merge(
                 df_reme_org,on = 'EEID',how='inner')
@@ -1600,7 +1601,7 @@ def analysis(df_submit, run_demo, file_path, display_path, main_page, main_page_
         metric_net_gap_1.plotly_chart(fig_gender_bar, use_container_width=True)
 
         metric_net_gap_2.markdown("<h1 style='text-align: left; vertical-align: bottom;color: #3498DB; font-size: 150%; opacity: 0.7'>Benchmark</h1>", unsafe_allow_html=True)
-        metric_net_gap_2.write("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 110%; opacity: 0.7'> 🌐 -3% ~ 1% </h1>" "Pay gap measures for every dollar paid to male employees, how much (less) or more goes to non-male employees. For example pay gap at -10% means that on average women are paid 10% less compared to men all else equal. In US, gender gap typically ranges between -3% and +1%. ", unsafe_allow_html=True)    
+        metric_net_gap_2.write("<h1 style='text-align: left; vertical-align: bottom;color: Green; font-size: 110%; opacity: 0.7'> 🌐 -3% ~ 1% </h1>" "Pay gap measures for every dollar paid to male employees, how much (less) or more goes to non-male employees. For example pay gap at -10% means that on average women are paid 10% less compared to men all else equal. A positive gap indicates that women are paid more than men, while a negative gap indicates that women are paid less than men. In US, gender gap typically ranges between -3% and +1%. ", unsafe_allow_html=True)
 
         num_gender_sig = df_result_gender['STAT_COUNT'].sum()
         # num_gender_sig = 0
