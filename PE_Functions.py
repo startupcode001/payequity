@@ -344,7 +344,7 @@ def reme(df,budget_df,X_full,factor, project_group_feature, protect_group_class)
 # Run Goal Seek for insignificant gap and 0 gap
 def reme_gap_seek(df,budget_df,X_full, project_group_feature, protect_group_class, seek_goal, current_pvalue, current_gap, input_df_result, count_loop, search_step = -0.005):
     factor_range = np.arange(2, -2,search_step)
-    threshold = 0.0005
+    threshold = 0.001
     
     # seek_budget_df = np.nan
     seek_budget_df = pd.DataFrame()
