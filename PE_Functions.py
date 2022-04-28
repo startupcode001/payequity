@@ -265,8 +265,7 @@ def process_run_result(results):
     df_result.loc[((df_result['PVALUE']<=0.05) & (df_result['COEF']<0)) ,"STAT_COUNT"] = 1
     
     df_result["GAP_COUNT"]=0
-    df_result.loc[((df_result['PVALUE']<=0.05) & (df_result['COEF']<=-0.001)) ,"GAP_COUNT"] = 1  
-    
+    df_result.loc[(df_result['COEF']<=-0.001) ,"GAP_COUNT"] = 1
     
     # df_result.to_excel('run_result.xlsx')
     # asdf
